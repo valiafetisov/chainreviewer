@@ -1,29 +1,19 @@
-import hljs from 'highlight.js'
-import hljsDefineSolidity from 'highlightjs-solidity'
-
-import React, { useEffect, useRef, useMemo } from 'react'
-import 'highlight.js/styles/agate.css'
+import { useEffect, useRef, useMemo } from 'react'
+import Prism from '~/prism/prism'
 
 type HighlightProps = {
-  language?: string
-  children: React.ReactNode
+  code: string
 }
 
-hljsDefineSolidity(hljs)
-
-const Highlight = ({ language, children }) => {
-  const codeRef = useRef()
-
+const Highlight = ({ code }: HighlightProps) => {
   useEffect(() => {
     // Highlight code
-    hljs.highlightElement(codeRef.current)
+    Prism.highlightAll()
   }, [])
 
   return (
     <pre>
-      <code ref={codeRef} className={`hljs language-${language}`}>
-        {children}
-      </code>
+      <code className="language-solidity line-numbers">{code}</code>
     </pre>
   )
 }
