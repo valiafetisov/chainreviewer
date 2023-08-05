@@ -1,6 +1,5 @@
 import '~/styles/globals.css'
 import '@rainbow-me/rainbowkit/styles.css'
-import '~/prism/prism.css'
 
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { WagmiConfig } from 'wagmi'

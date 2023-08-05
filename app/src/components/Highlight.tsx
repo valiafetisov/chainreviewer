@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import Prism from '~/prism/prism'
+import Prism from 'prismjs'
+import 'prismjs/themes/prism-okaidia.css'
 
 type HighlightProps = {
   code: string
