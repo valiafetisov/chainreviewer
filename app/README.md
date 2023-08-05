@@ -24,5 +24,5 @@ cp .env.example .env.local
 
 To use etherscan/optimism etherscan API call, you need to add api keys to `.env` file.
 `ETHERSCAN_API_KEY`: to search for `mainnet`, `mainnet-georli`, `mainnet-sapolia`,
-`ETHERSCAN_OPTIMISM_API_KEY`: to search for `optimism`
+`ETHERSCAN_API_KEY_OPTIMISM`: to search for `optimism`
 We only support chains specified above for now.
