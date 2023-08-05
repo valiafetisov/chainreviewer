@@ -13,8 +13,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Environment variables
 
-You can see all the `.env` variables in `.env.example`
-You can copy this file to create `.env.local`:
+You can see all the environment variables in`.env.example`.
+You can copy this file to create`.env.local`:
 
 ```bash
 cp .env.example .env.local
