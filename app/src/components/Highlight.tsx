@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from 'react'
+import { useEffect } from 'react'
 import Prism from '~/prism/prism'
 
 type HighlightProps = {
