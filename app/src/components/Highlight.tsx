@@ -14,7 +14,6 @@ hljsDefineSolidity(hljs)
 const Highlight = ({ language, children }) => {
   const codeRef = useRef()
 
-  const linkKeywords = useMemo(() => links.map((link) => link.keyword), [])
   useEffect(() => {
     // Highlight code
     hljs.highlightElement(codeRef.current)
