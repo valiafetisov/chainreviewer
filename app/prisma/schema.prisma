@@ -13,13 +13,13 @@ datasource db {
 model Contract {
   id                   Int     @id @default(autoincrement())
   address              String
-  chainId              String
+  chain                String
   sourceCode           String
-  contractName         String
   contractPath         String
+  contractName         String
   abi                  String
   compilerVersion      String
-  optimizationUsed     Boolean
+  optimizationUsed     Int
   runs                 String
   constructorArguments String  @default("")
   evmVersion           String
