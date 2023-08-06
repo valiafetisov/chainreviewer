@@ -11,22 +11,23 @@ datasource db {
 }
 
 model Contract {
-  id                   Int    @id @default(autoincrement())
+  id                   Int     @id @default(autoincrement())
   address              String
   chainId              String
   sourceCode           String
   contractName         String
+  contractPath         String
   abi                  String
   compilerVersion      String
-  optimizationUsed     String
+  optimizationUsed     Boolean
   runs                 String
-  constructorArguments String @default("")
+  constructorArguments String  @default("")
   evmVersion           String
-  library              String @default("")
-  licenseType          String 
-  proxy                String @default("")
-  implementation       String @default("")
-  swarmSource          String @default("")
+  library              String  @default("")
+  licenseType          String
+  proxy                String  @default("")
+  implementation       String  @default("")
+  swarmSource          String  @default("")
 
   createdAt DateTime @default(now())
 }

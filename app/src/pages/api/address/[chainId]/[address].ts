@@ -16,16 +16,16 @@ export default async function handler(
     return res.status(400).json({ error: 'No chainId or address' })
   }
 
-  const addressExists = await prisma.contract.findMany({
-    where: {
-      address: address as string,
-      chainId: parsedChainId,
-    },
-  })
+  // const addressExists = await prisma.contract.findMany({
+  //   where: {
+  //     address: address as string,
+  //     chainId: parsedChainId,
+  //   },
+  // })
 
-  if (addressExists.length) {
-    return res.status(200).json({ ...addressExists })
-  }
+  // if (addressExists.length) {
+  //   return res.status(200).json({ ...addressExists })
+  // }
 
   const { data } = await axios.get(
     `${getEtherscanApiUrl(
@@ -34,26 +34,38 @@ export default async function handler(
       parsedChainId
     )}`
   )
+  const source = data.result[0].SourceCode;
+  const slicedSource = source.substring(1, source.length - 1)
+  // console.log('sliced', typeof slicedSource, slicedSource)
+  const parsedSource = JSON.parse(slicedSource)
+  // console.log('source', parsedSource.sources)
+  const contractPaths = Object.keys(parsedSource.sources);
+  // console.log('contractPaths', contractPaths)
 
-  const contract = await prisma.contract.create({
-    data: {
-      address: address as string,
-      chainId: parsedChainId,
-      sourceCode: data.result[0].SourceCode,
-      contractName: data.result[0].ContractName,
-      abi: data.result[0].ABI,
-      compilerVersion: data.result[0].CompilerVersion,
-      optimizationUsed: data.result[0].OptimizationUsed,
-      runs: data.result[0].Runs,
-      constructorArguments: data.result[0].ConstructorArguments,
-      evmVersion: data.result[0].EVMVersion,
-      library: data.result[0].Library,
-      licenseType: data.result[0].LicenseType,
-      proxy: data.result[0].Proxy,
-      implementation: data.result[0].Implementation,
-      swarmSource: data.result[0].SwarmSource,
-    },
-  })
+  const contracts = [];
+  for (const contractPath of contractPaths) {
+    const eachSource = parsedSource.sources[contractPath].content
+    contracts.push({
+        contractPath,
+        address: address as string,
+        chainId: parsedChainId,
+        sourceCode: eachSource,
+        contractName: data.result[0].ContractName,
+        abi: data.result[0].ABI,
+        compilerVersion: data.result[0].CompilerVersion,
+        optimizationUsed: data.result[0].OptimizationUsed,
+        runs: data.result[0].Runs,
+        constructorArguments: data.result[0].ConstructorArguments,
+        evmVersion: data.result[0].EVMVersion,
+        library: data.result[0].Library,
+        licenseType: data.result[0].LicenseType,
+        proxy: data.result[0].Proxy,
+        implementation: data.result[0].Implementation,
+        swarmSource: data.result[0].SwarmSource,
+    })
+  }
 
-  res.status(200).json({ ...contract })
+  // await prisma.contract.createMany({ data: contracts })
+
+  res.status(200).json({ contracts })
 }
