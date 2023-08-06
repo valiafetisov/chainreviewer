@@ -20,3 +20,6 @@ export const chainConfig: Readonly<
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
 }
+
+export const firstLetterUppercase = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1)
