@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prismaDev": "dotenv -e .env.local prisma migrate dev "
+    "prisma": "dotenv -e .env.local prisma"
   },
   "dependencies": {
     "@eth-optimism/atst": "^0.2.0",

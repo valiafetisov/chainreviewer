@@ -9,3 +9,24 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Contract {
+  id                   Int    @id @default(autoincrement())
+  address              String
+  chainId              String
+  sourceCode           String
+  contractName         String
+  abi                  String
+  compilerVersion      String
+  optimizationUsed     String
+  runs                 String
+  constructorArguments String @default("")
+  evmVersion           String
+  library              String @default("")
+  licenseType          String 
+  proxy                String @default("")
+  implementation       String @default("")
+  swarmSource          String @default("")
+
+  createdAt DateTime @default(now())
+}
