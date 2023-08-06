@@ -6,7 +6,7 @@ First, run the development server:
 
 ```bash
 npm install
-cp .env.example .env.local
+cp .env.example .env
 npm run prisma db push
 npm run dev
 ```
@@ -16,10 +16,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Environment variables
 
 You can see all the environment variables in`.env.example`.
-You can copy this file to create`.env.local`:
+You can copy this file to create `.env`:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
 ### Etherscan API call
@@ -32,15 +32,15 @@ We only support chains specified above for now.
 ### Database
 
 For development, we use `SQLite + prisma ORM`.
-To setup database locally, please manually add `DATABASE_URL` to `.env.local` or copy the `.env.example` file.
+To setup database locally, please manually add `DATABASE_URL` to `.env` or copy the `.env.example` file.
 
 ```bash
 # to create database locally
-npm run prisma db push
+npx prisma db push
 
 # to check database state
-npm run prisma studio
+npx prisma studio
 
 # to format schema.prisma file
-npm run prisma format
+npx prisma format
 ```
