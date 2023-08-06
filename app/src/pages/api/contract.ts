@@ -47,17 +47,7 @@ function getAst(val: string) {
     }
 }
 
-export default async (_req: NextApiRequest, res: NextApiResponse) => {
-    const contractInfo = getContractAndAbi();
-    if (!contractInfo) {
-        return res.status(500).json({ error: 'Server error' });
-    }
-    const { contract, abi } = contractInfo;
-    const ast = getAst(contract);
-    if (!ast) {
-        return res.status(500).json({ error: 'Server error' });
-    }
-    const addresses: AddressInfo[] = [];
+function layer_extract_defenitions_and_declarations(ast: any, addresses: AddressInfo[]) {
     visit(ast, {
         NumberLiteral: (node, parent) => {
             isAddress(node.number) && node.loc ? addresses.push(
@@ -100,7 +90,7 @@ export default async (_req: NextApiRequest, res: NextApiResponse) => {
             }
             if (node.returnParameters[0].typeName?.type !== 'ElementaryTypeName'
                 || node.returnParameters[0].typeName.name !== 'address'
-               ) {
+            ) {
                 return
             }
             if (!node.body && node.visibility === 'external') {
@@ -149,5 +139,20 @@ export default async (_req: NextApiRequest, res: NextApiResponse) => {
             })
         },
     })
+}
+
+export default async (_req: NextApiRequest, res: NextApiResponse) => {
+    const contractInfo = getContractAndAbi();
+    if (!contractInfo) {
+        return res.status(500).json({ error: 'Server error' });
+    }
+    const { contract, abi } = contractInfo;
+    const ast = getAst(contract);
+    if (!ast) {
+        return res.status(500).json({ error: 'Server error' });
+    }
+    const addresses: AddressInfo[] = [];
+    layer_extract_defenitions_and_declarations(ast, addresses);
+
     res.status(200).json({ ast, abi: JSON.parse(abi), addresses });
 };
