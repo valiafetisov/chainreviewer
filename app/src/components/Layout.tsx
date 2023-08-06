@@ -2,6 +2,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import type { Metadata } from 'next'
 import { useState, useEffect } from 'react'
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
+import { firstLetterUppercase } from '~/helpers'
 
 import Header from '~/components/Header'
 import Link from 'next/link'
@@ -21,11 +22,12 @@ export default function RootLayout({
 
   useEffect(() => setMounted(true), [])
   useEffect(() => {
-    if (!chain && !address) {
-      setHeaderText('Know your contracts')
+    if (chain && address) {
+      setHeaderText(`${firstLetterUppercase(chain as string)} / ${address}`)
       return
     }
-    setHeaderText(`${chain} / ${address}`)
+
+    setHeaderText('Know your contracts')
   }, [chain, address])
 
   if (!mounted) {
