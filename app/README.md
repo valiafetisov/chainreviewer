@@ -7,26 +7,42 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 First, run the development server:
 
 ```bash
+npm install
+cp .env.example .env
+npm run prisma db push
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+You can see all the environment variables in`.env.example`.
+You can copy this file to create `.env`:
 
-## Learn More
+```bash
+cp .env.example .env
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Etherscan API call
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+To use etherscan/optimism etherscan API call, you need to add api keys to `.env` file.
+`ETHERSCAN_API_KEY`: to search for `mainnet`, `mainnet-georli`, `mainnet-sapolia`,
+`ETHERSCAN_API_KEY_OPTIMISM`: to search for `optimism`
+We only support chains specified above for now.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### Database
 
-## Deploy on Vercel
+For development, we use `SQLite + prisma ORM`.
+To setup database locally, please manually add `DATABASE_URL` to `.env` or copy the `.env.example` file.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# to create database locally
+npx prisma db push
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+# to check database state
+npx prisma studio
+
+# to format schema.prisma file
+npx prisma format
+```
