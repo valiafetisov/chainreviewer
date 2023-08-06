@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { readFileSync } from 'fs';
 import { join } from 'path'
 import { parse, visit } from '@solidity-parser/parser'
-import { ASTNode, StateVariableDeclaration, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
+import { ASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
 
 const SAMPLE_DIR = join(__dirname, '../../../../../sample_data/DssSpell')
 
@@ -153,6 +153,7 @@ export default async (_req: NextApiRequest, res: NextApiResponse) => {
     }
     const addresses: AddressInfo[] = [];
     layer_extract_defenitions_and_declarations(ast, addresses);
+    const temp_return = addresses.filter(a => a.source === 'hardcoded');
 
-    res.status(200).json({ ast, abi: JSON.parse(abi), addresses });
+    res.status(200).json({ ast, abi: JSON.parse(abi), addresses: temp_return });
 };
