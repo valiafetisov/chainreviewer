@@ -6,12 +6,22 @@ import { ASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/a
 
 const SAMPLE_DIR = join(__dirname, '../../../../../sample_data/DssSpell')
 
+
+interface GetAddressBase {
+    type: DirectValueReturn['type'];
+}
+interface DirectValueReturn  extends GetAddressBase {
+    type: 'DirectValueReturn'
+    value: string;
+}
+type GetAddress = DirectValueReturn;
+
 interface AddressInfo {
     filename: string;
     loc: ASTNode['loc'];
     range: ASTNode['range'];
     source: "variable" | "hardcoded" | "interface" | "public_function" | "external_function" | "private_function" | "state";
-    getAddress: (...args: any[]) => string,
+    getAddress: GetAddress,
     parent: ASTNode | undefined,
 }
 
@@ -56,7 +66,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
                     loc: node.loc,
                     range: node.range,
                     source: "hardcoded",
-                    getAddress: () => node.number,
+                    getAddress: {type: 'DirectValueReturn', value: "TODO"},
                     parent,
                 }
             ) : null
@@ -79,7 +89,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
                     loc: node.loc,
                     range: node.range,
                     source: "variable",
-                    getAddress: () => "TODO",
+                    getAddress: {type: 'DirectValueReturn', value: "TODO"},
                     parent,
                 }
             );
@@ -100,7 +110,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
                         loc: node.loc,
                         range: node.range,
                         source: "interface",
-                        getAddress: () => "TODO",
+                        getAddress: {type: 'DirectValueReturn', value: "TODO"},
                         parent,
                     }
                 );
@@ -116,7 +126,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
                     loc: node.loc,
                     range: node.range,
                     source: `${visibility}_function`,
-                    getAddress: () => "TODO",
+                    getAddress: {type: 'DirectValueReturn', value: "TODO"},
                     parent,
                 }
             )
@@ -134,7 +144,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
                 loc: node.loc,
                 range: node.range,
                 source: "state",
-                getAddress: () => "TODO",
+                getAddress: {type: 'DirectValueReturn', value: "TODO"},
                 parent,
             })
         },
