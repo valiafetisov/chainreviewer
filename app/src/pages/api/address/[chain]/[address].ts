@@ -1,12 +1,13 @@
 import { z } from 'zod'
 import axios from 'axios'
-import { getChainConfig } from '~/helpers'
+import { chainConfig } from '~/helpers'
 import { NextApiRequest, NextApiResponse } from 'next'
 import getPrisma from '~/helpers/getPrisma'
+import { supportedChain } from '~/schemas'
 
 const addressSchema = z.object({
   address: z.string(),
-  chain: z.string(),
+  chain: supportedChain,
 })
 
 export default async function handler(
@@ -27,7 +28,7 @@ export default async function handler(
     return res.status(200).json({ contracts: addressExists })
   }
 
-  const { endpoint, apiKey } = getChainConfig(chain)
+  const { endpoint, apiKey } = chainConfig[chain]
   if (!apiKey) {
     return new Error('No API key')
   }
