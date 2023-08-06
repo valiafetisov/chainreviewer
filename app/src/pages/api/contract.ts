@@ -17,7 +17,7 @@ interface DirectValueReturn  extends GetAddressBase {
 type GetAddress = DirectValueReturn;
 
 interface AddressInfo {
-    filename: string;
+    contractPath: string;
     loc: ASTNode['loc'];
     range: ASTNode['range'];
     source: "variable" | "hardcoded" | "interface" | "public_function" | "external_function" | "private_function" | "state";
@@ -62,7 +62,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
         NumberLiteral: (node, parent) => {
             isAddress(node.number) && node.loc ? addresses.push(
                 {
-                    filename: "todo",
+                    contractPath: "todo",
                     loc: node.loc,
                     range: node.range,
                     source: "hardcoded",
@@ -85,7 +85,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
             }
             addresses.push(
                 {
-                    filename: "todo",
+                    contractPath: "todo",
                     loc: node.loc,
                     range: node.range,
                     source: "variable",
@@ -106,7 +106,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
             if (!node.body && node.visibility === 'external') {
                 addresses.push(
                     {
-                        filename: "todo",
+                        contractPath: "todo",
                         loc: node.loc,
                         range: node.range,
                         source: "interface",
@@ -122,7 +122,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
             }
             addresses.push(
                 {
-                    filename: "todo",
+                    contractPath: "todo",
                     loc: node.loc,
                     range: node.range,
                     source: `${visibility}_function`,
@@ -140,7 +140,7 @@ function layer_extract_defenitions_and_declarations(ast: any, addresses: Address
                 return;
             }
             addresses.push({
-                filename: "todo",
+                contractPath: "todo",
                 loc: node.loc,
                 range: node.range,
                 source: "state",
