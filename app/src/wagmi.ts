@@ -6,15 +6,15 @@ import { publicProvider } from 'wagmi/providers/public'
 const walletConnectProjectId = '42c79d6a79e58f85e7631a32d57ef073'
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [optimism, ...(process.env.NODE_ENV === 'development' ? [optimismGoerli] : [])],
   [
-    publicProvider(),
+    optimism,
+    ...(process.env.NODE_ENV === 'development' ? [optimismGoerli] : []),
   ],
+  [publicProvider()]
 )
 
 const { connectors } = getDefaultWallets({
-  // TODO: update with our app name
-  appName: 'App Name',
+  appName: 'SideScan',
   chains,
   projectId: walletConnectProjectId,
 })

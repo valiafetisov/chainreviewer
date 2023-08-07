@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Contract {
+  id                   Int     @id @default(autoincrement())
+  address              String
+  chain                String
+  sourceCode           String
+  contractPath         String
+  contractName         String
+  abi                  String
+  compilerVersion      String
+  optimizationUsed     Int
+  runs                 String
+  constructorArguments String  @default("")
+  evmVersion           String
+  library              String  @default("")
+  licenseType          String
+  proxy                String  @default("")
+  implementation       String  @default("")
+  swarmSource          String  @default("")
+
+  createdAt DateTime @default(now())
+}
