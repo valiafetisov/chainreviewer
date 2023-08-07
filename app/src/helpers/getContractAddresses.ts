@@ -15,7 +15,6 @@ function getAst(val: string) {
     }
 }
 
-
 export const getAddresses = (contractInfo: Contract) => {
     const { contractName, contractPath, sourceCode  } = contractInfo;
     const ast = getAst(sourceCode);
@@ -29,7 +28,7 @@ export const getAddresses = (contractInfo: Contract) => {
                     loc: node.loc,
                     range: node.range,
                     source: "hardcoded",
-                    getAddress: {type: 'DirectValueReturn', value: "TODO"},
+                    getAddress: () => node.number,
                     parent,
                 }
             ) : null
