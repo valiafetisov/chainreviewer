@@ -2,6 +2,7 @@ import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types';
 export declare interface AddressInfo {
     contractPath: string;
     contractName: string;
+    address: string;
     locStartLine: number;
     locStartCol: number;
     locEndLine: number;
