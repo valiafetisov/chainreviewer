@@ -79,11 +79,11 @@ export const getAddresses = (contractInfo: Contract) => {
                     parent: variableDeclarationParent,
                 }
             )
-            discoveredVariables[getVariableId(varName, node)] = initValue.number;
             // If variable declaraton is in block (curly brackets) - search it for the name occurence
             if (!variableDeclarationParent || variableDeclarationParent.type !== 'Block') {
                 return
             }
+            discoveredVariables[getVariableId(varName, variableDeclarationParent)] = initValue.number;
             visit(variableDeclarationParent, {
                 Identifier(identifierNode, identifierParent) {
                     if (identifierNode.name === varName && identifierNode.loc !== node.loc) {
@@ -134,8 +134,38 @@ export const getAddresses = (contractInfo: Contract) => {
                     parent: variableDeclarationParent,
                 }
             )
-            discoveredVariables[getVariableId(varName, node)] = initValue.number;
+            discoveredStateVars[getVariableId(varName, node)] = initValue.number;
         },
+    })
+    visit(ast, {
+        Identifier(node, parent) {
+            const stateVarsWithMatchingName = Object.keys(discoveredStateVars).filter(key => key.startsWith(`${node.name} `));
+            const targetLine = node.loc?.start.line;
+            if (!targetLine) {
+                return
+            }
+            let relevantDeclarationLine: number = 0;
+            stateVarsWithMatchingName.forEach(key => {
+                const [_varName, line] = key.split(' ');
+                if (targetLine > Number(line) && Number(line) > relevantDeclarationLine) {
+                    relevantDeclarationLine = Number(line);
+                }
+            })
+            const address = discoveredStateVars[`${node.name} ${relevantDeclarationLine}`] || undefined;
+            if (!address) {
+                return
+            }
+            addresses.push(
+                {
+                    ...getFlatLocationInfo(node),
+                    contractPath,
+                    contractName,
+                    source: "state",
+                    getAddress: () => address,
+                    parent,
+                }
+            )
+        }
     })
     return addresses;
 }
