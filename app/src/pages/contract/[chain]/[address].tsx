@@ -45,7 +45,7 @@ const ContractMenuReferenceItem = ({
   address: string
   name: string
 }) => (
-  <div className="w-full bg-blue-50 py-1 px-2">
+  <div className="w-full bg-blue-50 py-2 px-2">
     <div className="flex justify-between break-words">
       <p>Source: {source}</p>
       <p>{shortendAddress(address)}</p>
@@ -94,7 +94,7 @@ export default function Address() {
   }
 
   return (
-    <div className="flex gap-2 h-screen">
+    <div className="flex gap-3 h-screen">
       <div className="flex-1 max-w-[calc(100%-20rem)] h-full overflow-scroll">
         {isLoading ? (
           <div>
@@ -114,9 +114,13 @@ export default function Address() {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-4 w-80 h-full overflow-scroll">
+      <div className="flex flex-col gap-3 w-80 h-full overflow-scroll">
         <div className="bg-white flex flex-col gap-[3px] relative">
-          <ContractMenuTitle title="File" total={constracts.length} />
+          <ContractMenuTitle
+            title="File"
+            total={constracts.length}
+            className="mb-1"
+          />
           {constracts.map((contract) => (
             <>
               <ContractMenuFileItem

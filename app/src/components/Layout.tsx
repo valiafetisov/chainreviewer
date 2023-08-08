@@ -34,7 +34,7 @@ export default function RootLayout({
     return null
   }
   return (
-    <main className="min-h-screen flex flex-col gap-2">
+    <main className="min-h-screen flex flex-col gap-3">
       <Header pageDescription={headerText} />
       <div className="px-2 flex-1 flex flex-col">{children}</div>
       <div className="h-5 mb-2 text-center text-sm text-gray-500">
