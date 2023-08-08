@@ -1,7 +1,8 @@
 import '~/styles/globals.css'
 import '@rainbow-me/rainbowkit/styles.css'
+import { ConfigProvider } from 'antd'
 
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit'
 import { WagmiConfig } from 'wagmi'
 import type { AppProps } from 'next/app'
 
@@ -11,11 +12,26 @@ import { chains, config } from '../wagmi'
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig config={config}>
-      <RainbowKitProvider chains={chains}>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </RainbowKitProvider>
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: '#897A5F',
+          },
+        }}
+      >
+        <RainbowKitProvider
+          theme={lightTheme({
+            borderRadius: 'small',
+            accentColor: '#897A5F',
+            accentColorForeground: '#FFF',
+          })}
+          chains={chains}
+        >
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </RainbowKitProvider>
+      </ConfigProvider>
     </WagmiConfig>
   )
 }

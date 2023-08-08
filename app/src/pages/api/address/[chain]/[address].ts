@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { NextApiRequest, NextApiResponse } from 'next'
 import getContractInfo from '~/helpers/getContractInfo'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 const addressSchema = z.object({
   address: z.string(),

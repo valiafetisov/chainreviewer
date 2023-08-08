@@ -1,12 +1,16 @@
-import { Contract } from "@prisma/client";
-import { getChainConfig } from ".";
-import getPrisma from "./getPrisma";
-import axios from 'axios';
+import { Contract } from '@prisma/client'
+import { getChainConfigs } from '.'
+import getPrisma from './getPrisma'
+import axios from 'axios'
+import type { SupportedChain } from '~/types'
 
-export default async function getContractInfo(address: string, chain: string): Promise<Contract[] | Error> {
+export default async function getContractInfo(
+  address: string,
+  chain: SupportedChain
+): Promise<Contract[] | Error> {
   const prisma = getPrisma()
 
-  const addressExists: Contract[] = await prisma.contract.findMany({
+  const addressExists = await prisma.contract.findMany({
     where: {
       address: address as string,
       chain: chain,
@@ -14,10 +18,10 @@ export default async function getContractInfo(address: string, chain: string): P
   })
 
   if (addressExists.length) {
-    return addressExists;
+    return addressExists
   }
 
-  const { endpoint, apiKey } = getChainConfig(chain)
+  const { endpoint, apiKey } = getChainConfigs(chain)
   if (!apiKey) {
     return new Error('No API key')
   }
@@ -62,15 +66,14 @@ export default async function getContractInfo(address: string, chain: string): P
     // When there are only one contract
     contracts.push({
       ...contractBase,
-      contractPath: '/',
+      contractPath: `/${contractBase.contractName}.sol`,
       sourceCode: data.result[0].SourceCode,
     })
   }
 
-  const created: Contract[] = [];
+  const createdContracts = []
   for (const contract of contracts) {
-    const newContract: Contract = await prisma.contract.create({ data: contract })
-    created.push(newContract);
+    createdContracts.push(await prisma.contract.create({ data: contract }))
   }
-  return created;
+  return createdContracts
 }
