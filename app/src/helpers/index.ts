@@ -19,7 +19,7 @@ export const chainConfigs: Readonly<
   },
   mode: {
     endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
-    apiKey: 'none',
+    apiKey: undefined
   },
 }
 
