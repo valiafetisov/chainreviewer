@@ -17,6 +17,10 @@ export const chainConfigs: Readonly<
     endpoint: 'https://api-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
+  mode: {
+    endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
+    apiKey: undefined
+  },
 }
 
 export const getChainConfigs = (chain: string) => {
