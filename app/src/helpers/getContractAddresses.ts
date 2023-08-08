@@ -28,7 +28,7 @@ function getFlatLocationInfo(node: ASTNode) {
     }
 }
 
-const getVariableId = (varName:string, node: ASTNode) => (`${varName}_${node.loc?.start.line || ''}`);
+const getVariableId = (varName:string, node: ASTNode) => (`${varName} ${node.loc?.start.line || ''}`);
 
 export const getAddresses = (contractInfo: Contract) => {
     const { contractName, contractPath, sourceCode  } = contractInfo;
@@ -49,6 +49,7 @@ export const getAddresses = (contractInfo: Contract) => {
         }
     })
     const discoveredVariables: Record<string, string> = {};
+    const discoveredStateVars: Record<string, string> = {};
     visit(ast, {
         VariableDeclarationStatement(node, variableDeclarationParent) {
             const initValue = node.initialValue;
@@ -99,6 +100,41 @@ export const getAddresses = (contractInfo: Contract) => {
                     }
                 }
             });
+        },
+    })
+    visit(ast, {
+        StateVariableDeclaration(node, variableDeclarationParent) {
+            const initValue = node.initialValue;
+            if (!initValue || initValue.type !== 'NumberLiteral' || !isAddress(initValue.number)) {
+                return
+            }
+            // only supports single variable in assignment such as `address a = 0x1234`
+            const nodeVars = node.variables;
+            if (!nodeVars || nodeVars.length !== 1) {
+                return;
+            }
+            const variableDeclaration = nodeVars[0];
+            if (!variableDeclaration || variableDeclaration.type !== 'VariableDeclaration') {
+                return;
+            }
+            const varName = (variableDeclaration as VariableDeclaration).name;
+            if (!varName) {
+                return;
+            }
+            if (!variableDeclaration.identifier) {
+                return
+            }
+            addresses.push(
+                {
+                    ...getFlatLocationInfo(variableDeclaration.identifier),
+                    contractPath,
+                    contractName,
+                    source: "state",
+                    getAddress: () => initValue.number,
+                    parent: variableDeclarationParent,
+                }
+            )
+            discoveredVariables[getVariableId(varName, node)] = initValue.number;
         },
     })
     return addresses;
