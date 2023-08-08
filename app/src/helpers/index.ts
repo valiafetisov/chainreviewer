@@ -25,4 +25,4 @@ export const firstLetterUppercase = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1)
 
 export const shortendAddress = (address: string) =>
-  `${address.slice(0, 5)}...${address.slice(-3)}`
+  `${address.slice(0, 4)}...${address.slice(-4)}`
