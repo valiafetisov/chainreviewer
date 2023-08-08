@@ -42,7 +42,7 @@ export default async function getContractInfo(
       abi: JSON.stringify(data.abi),
       compilerVersion: data.compiler_version,
       optimizationUsed: 0,
-      runs: data.optimization_runs ?? '',
+      runs: Number(data.optimization_runs) ?? 0,
       constructorArguments: data.constructor_args ?? '',
       evmVersion: data.evm_version,
       library: JSON.stringify(data.external_libraries),
