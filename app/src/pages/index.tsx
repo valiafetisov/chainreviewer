@@ -2,13 +2,15 @@ import { useState, SyntheticEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Select, Input, Button } from 'antd'
-import { supportedChain } from '~/schemas'
 import { firstLetterUppercase } from '~/helpers'
 import type { SupportedChain } from '~/types'
 import styles from './index.module.css'
+import { chainConfigs } from '~/helpers'
 
 export default function Home() {
-  const [chain, setChain] = useState<SupportedChain>(supportedChain.options[0])
+  const [chain, setChain] = useState<SupportedChain>(
+    Object.keys(chainConfigs)[0]
+  )
   const [address, setAddress] = useState('')
   const router = useRouter()
 
@@ -29,7 +31,7 @@ export default function Home() {
             <Select
               value={chain}
               onChange={setChain}
-              options={supportedChain.options.map((chain) => ({
+              options={Object.keys(chainConfigs).map((chain) => ({
                 label: firstLetterUppercase(chain),
                 value: chain,
               }))}

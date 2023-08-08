@@ -1,7 +1,5 @@
-import type { SupportedChain } from '~/types'
-
-export const chainConfig: Readonly<
-  Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
+export const chainConfigs: Readonly<
+  Record<string, { endpoint: string; apiKey: string | undefined }>
 > = {
   mainnet: {
     endpoint: 'https://api.etherscan.io',
@@ -19,6 +17,14 @@ export const chainConfig: Readonly<
     endpoint: 'https://api-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
+}
+
+export const getChainConfigs = (chain: string) => {
+  const config = chainConfigs[chain]
+  if (!config) {
+    throw new Error('Invalid chain')
+  }
+  return config
 }
 
 export const firstLetterUppercase = (str: string) =>

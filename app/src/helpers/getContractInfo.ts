@@ -1,5 +1,5 @@
 import { Contract } from '@prisma/client'
-import { chainConfig } from '.'
+import { getChainConfigs } from '.'
 import getPrisma from './getPrisma'
 import axios from 'axios'
 import type { SupportedChain } from '~/types'
@@ -21,7 +21,7 @@ export default async function getContractInfo(
     return addressExists
   }
 
-  const { endpoint, apiKey } = chainConfig[chain]
+  const { endpoint, apiKey } = getChainConfigs(chain)
   if (!apiKey) {
     return new Error('No API key')
   }

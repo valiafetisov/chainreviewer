@@ -1,11 +1,10 @@
 import { z } from 'zod'
 import getContractInfo from '~/helpers/getContractInfo'
-import { supportedChain } from '~/schemas'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const addressSchema = z.object({
   address: z.string(),
-  chain: supportedChain,
+  chain: z.string(),
 })
 
 export default async function handler(

@@ -1,8 +1,7 @@
-import { z } from 'zod'
-import { supportedChain } from '~/schemas'
 import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types'
+import { chainConfigs } from '~/helpers'
 
-export type SupportedChain = z.infer<typeof supportedChain>
+export type SupportedChain = keyof typeof chainConfigs
 export declare interface AddressInfo {
   contractPath: string
   contractName: string

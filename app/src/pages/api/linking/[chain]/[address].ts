@@ -4,11 +4,10 @@ import { AddressInfo } from '~/types'
 import { getAddresses } from '~/helpers/getContractAddresses'
 import getContractInfo from '~/helpers/getContractInfo'
 import { Contract } from '@prisma/client'
-import { supportedChain } from '~/schemas'
 
 const addressSchema = z.object({
   address: z.string(),
-  chain: supportedChain,
+  chain: z.string(),
 })
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {

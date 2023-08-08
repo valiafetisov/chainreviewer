@@ -1,5 +1,5 @@
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
-import { supportedChain } from '~/schemas'
+import { chainConfigs } from '~/helpers'
 import { isAddress } from 'viem'
 import { shortendAddress } from '~/helpers'
 import Link from 'next/link'
@@ -49,7 +49,7 @@ const ContractMenuReferenceItem = ({
 
 export default function Address() {
   const { chain, address } = useDynamicRouteParams()
-  const parsedChain = supportedChain.safeParse(chain)
+  const chainConfig = chainConfigs[chain as string]
   const isAddressValid = useMemo(
     () => (typeof address === 'string' ? isAddress(address) : false),
     [address]
@@ -58,7 +58,7 @@ export default function Address() {
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (address && parsedChain.success && isAddressValid) {
+    if (address && chainConfig && isAddressValid) {
       setIsLoading(true)
       fetch(`/api/address/${chain}/${address}`)
         .then((res) => res.json())
@@ -69,16 +69,12 @@ export default function Address() {
           setIsLoading(false)
         })
     }
-  }, [address, chain, isAddressValid, parsedChain.success])
+  }, [address, chain, isAddressValid, chainConfig])
 
-  if (!address || !parsedChain.success || !isAddressValid) {
+  if (!address || !chainConfig || !isAddressValid) {
     return (
       <div>
-        <p>
-          {!parsedChain.success
-            ? `Not supported or invalid chain ${chain}`
-            : ''}
-        </p>
+        <p>{!chainConfig ? `Not supported or invalid chain ${chain}` : ''}</p>
         <p>
           {!address
             ? 'Address not provided'
