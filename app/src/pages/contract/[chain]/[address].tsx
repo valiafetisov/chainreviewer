@@ -100,11 +100,8 @@ export default function Address() {
         ) : (
           <div>
             {constracts.map((contract) => (
-              <div key={contract.id}>
-                <h1
-                  id={contract.contractPath}
-                  className="text-xl font-bold bg-white sticky top-0 z-10"
-                >
+              <div key={contract.id} id={contract.contractPath}>
+                <h1 className="text-xl font-bold bg-white sticky top-0 z-10">
                   {contract.contractPath}
                 </h1>
                 <Highlight code={contract.sourceCode} />
