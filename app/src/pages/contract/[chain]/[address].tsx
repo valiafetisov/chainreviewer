@@ -29,9 +29,9 @@ const ContractMenuTitle = ({
 )
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
-  <Link href={`#${filePath}`} className="w-full bg-blue-50 py-1 px-2">
-    <span title={filePath} className={styles.reverseElipsis}>
-      {filePath}
+  <Link href={`#${filePath}`} className="w-full bg-blue-50 py-1 px-2 block">
+    <span title={filePath} className={styles.reverseElipsis} dir='rtl'>
+      &lrm;{filePath}
     </span>
   </Link>
 )
@@ -117,7 +117,7 @@ export default function Address() {
       <div className="flex flex-col gap-3 w-80 h-full overflow-scroll">
         <div className="bg-white flex flex-col gap-[3px] relative">
           <ContractMenuTitle
-            title="File"
+            title="Files"
             total={constracts.length}
             className="mb-1"
           />
