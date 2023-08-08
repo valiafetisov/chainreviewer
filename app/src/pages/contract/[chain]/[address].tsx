@@ -102,8 +102,8 @@ export default function Address() {
   }
 
   return (
-    <div className="flex gap-3 h-screen">
-      <div className="flex-1 max-w-[calc(100%-20rem)] h-full overflow-scroll">
+    <div className="flex gap-3">
+      <div className="flex-1 max-w-[calc(100%-21rem)] h-full">
         {isLoading ? (
           <div>
             <p>Loading...</p>
@@ -116,7 +116,7 @@ export default function Address() {
                   className="sticky top-0 z-10"
                   title={contract.contractPath}
                 />
-                <div className="-mt-[2px]">
+                <div className="-mt-[2px] bg-neutral-900">
                   <Highlight code={contract.sourceCode} />
                 </div>
               </div>
@@ -124,43 +124,45 @@ export default function Address() {
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-3 w-80 h-full overflow-scroll">
-        <div className="bg-white flex flex-col gap-1 relative">
-          <ContractMenuTitle
-            title="Files"
-            isLoading={isLoading}
-            total={constracts.length}
-          />
-          {constracts.map((contract) => (
-            <>
-              <ContractMenuFileItem
-                key={contract.id}
-                filePath={contract.contractPath}
-              />
-            </>
-          ))}
-        </div>
-        <div className="bg-white">
+      <div>
+        <div className="flex flex-col gap-3 w-80 sticky top-0 h-screen overflow-scroll">
           <div className="bg-white flex flex-col gap-1">
-            <ContractMenuTitle title="References" total={3} isLoading={isLoading} />
-            <ContractMenuReferenceItem
-              chain={chain as string}
-              source="code"
-              address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-              name="LedingProtocolProvider"
-              />
-            <ContractMenuReferenceItem
-              chain={chain as string}
-              source="code"
-              address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-              name="POOL"
-              />
-            <ContractMenuReferenceItem
-              chain={chain as string}
-              source="state"
-              address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-              name="POOL_STATE"
+            <ContractMenuTitle
+              title="Files"
+              isLoading={isLoading}
+              total={constracts.length}
             />
+            {constracts.map((contract) => (
+              <>
+                <ContractMenuFileItem
+                  key={contract.id}
+                  filePath={contract.contractPath}
+                />
+              </>
+            ))}
+          </div>
+          <div className="bg-white">
+            <div className="bg-white flex flex-col gap-1">
+              <ContractMenuTitle title="References" total={3} isLoading={isLoading} />
+              <ContractMenuReferenceItem
+                chain={chain as string}
+                source="code"
+                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+                name="LedingProtocolProvider"
+                />
+              <ContractMenuReferenceItem
+                chain={chain as string}
+                source="code"
+                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+                name="POOL"
+                />
+              <ContractMenuReferenceItem
+                chain={chain as string}
+                source="state"
+                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+                name="POOL_STATE"
+              />
+            </div>
           </div>
         </div>
       </div>
