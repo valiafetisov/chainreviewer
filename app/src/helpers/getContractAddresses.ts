@@ -31,7 +31,7 @@ function getFlatLocationInfo(node: ASTNode) {
 const getVariableId = (varName:string, node: ASTNode) => (`${varName} ${node.loc?.start.line || ''}`);
 
 export const getAddresses = (contractInfo: Contract) => {
-    const { contractName, contractPath, sourceCode  } = contractInfo;
+    const { contractName, contractPath, sourceCode, address  } = contractInfo;
     const ast = getAst(sourceCode);
     const addresses: AddressInfo[] = [];
     visit(ast, {
@@ -41,6 +41,13 @@ export const getAddresses = (contractInfo: Contract) => {
                     contractPath,
                     contractName,
                     ...getFlatLocationInfo(node),
+                    address,
+                    locStartLine: node.loc.start.line,
+                    locStartCol: node.loc.start.column,
+                    locEndLine: node.loc.end.line,
+                    locEndCol: node.loc.end.column,
+                    rangeFrom: node.range ? node.range[0] : undefined,
+                    rangeTo: node.range ? node.range[1] : undefined,
                     source: "hardcoded",
                     getAddress: () => node.number,
                     parent,
