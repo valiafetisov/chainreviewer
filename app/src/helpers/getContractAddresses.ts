@@ -1,6 +1,6 @@
 import { Contract } from '@prisma/client';
 import { parse, visit } from '@solidity-parser/parser'
-import { ASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
+import { ASTNode, BaseASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
 import {AddressInfo} from '~/types'
 
 const isAddress = (val: string) => {
@@ -16,7 +16,7 @@ function getAst(val: string) {
     }
 }
 
-function getFlatLocationInfo(node: ASTNode) {
+function getFlatLocationInfo(node: ASTNode | BaseASTNode) {
     if (!node.loc) {throw new Error('No location info')}
     return {
         locStartLine: node.loc.start.line,
@@ -28,7 +28,7 @@ function getFlatLocationInfo(node: ASTNode) {
     }
 }
 
-const getVariableId = (varName:string, node: ASTNode) => (`${varName} ${node.loc?.start.line || ''}`);
+const getVariableId = (varName:string, node: ASTNode) => (`${varName} ${node.range ? node.range[0] : ''}`);
 
 export const getAddresses = (contractInfo: Contract) => {
     const { contractName, contractPath, sourceCode, address  } = contractInfo;
@@ -73,12 +73,13 @@ export const getAddresses = (contractInfo: Contract) => {
                 return;
             }
             const varName = (variableDeclaration as VariableDeclaration).name;
-            if (!varName) {
+            const varDeclarationIdentifier = (variableDeclaration as VariableDeclaration).identifier;
+            if (!varName || !varDeclarationIdentifier) {
                 return;
             }
             addresses.push(
                 {
-                    ...getFlatLocationInfo(node),
+                    ...getFlatLocationInfo(varDeclarationIdentifier),
                     contractPath,
                     contractName,
                     source: "variable",
@@ -94,19 +95,26 @@ export const getAddresses = (contractInfo: Contract) => {
             discoveredVariables[getVariableId(varName, variableDeclarationParent)] = initValue.number;
             visit(variableDeclarationParent, {
                 Identifier(identifierNode, identifierParent) {
-                    if (identifierNode.name === varName && identifierNode.loc !== node.loc) {
-                        addresses.push(
-                            {
-                                ...getFlatLocationInfo(identifierNode),
-                                contractPath,
-                                address,
-                                contractName,
-                                source: "variable",
-                                getAddress: () => initValue.number,
-                                parent: identifierParent,
-                            }
-                        )
+                    const isNotReferenceToDeclaredVar = (
+                        (identifierNode.name !== varName)
+                        || identifierNode.range
+                        && varDeclarationIdentifier.range
+                        && (identifierNode.range[0] === varDeclarationIdentifier.range[0])
+                    );
+                    if (isNotReferenceToDeclaredVar) {
+                        return
                     }
+                    addresses.push(
+                        {
+                            ...getFlatLocationInfo(identifierNode),
+                            contractPath,
+                            address,
+                            contractName,
+                            source: "variable",
+                            getAddress: () => initValue.number,
+                            parent: identifierParent,
+                        }
+                    )
                 }
             });
         },
@@ -144,25 +152,31 @@ export const getAddresses = (contractInfo: Contract) => {
                     parent: variableDeclarationParent,
                 }
             )
-            discoveredStateVars[getVariableId(varName, node)] = initValue.number;
+            discoveredStateVars[getVariableId(varName, variableDeclaration.identifier)] = initValue.number;
         },
     })
     visit(ast, {
         Identifier(node, parent) {
             const stateVarsWithMatchingName = Object.keys(discoveredStateVars).filter(key => key.startsWith(`${node.name} `));
-            const targetLine = node.loc?.start.line;
-            if (!targetLine) {
+            if (stateVarsWithMatchingName.length === 0) {
                 return
             }
-            let relevantDeclarationLine: number = 0;
+            const targetRangeStart = node.range ? node.range[0] : undefined;
+            if (!targetRangeStart) {
+                return
+            }
+            let relevantDeclarationRangeStart: number = 0;
             stateVarsWithMatchingName.forEach(key => {
-                const [_varName, line] = key.split(' ');
-                if (targetLine > Number(line) && Number(line) > relevantDeclarationLine) {
-                    relevantDeclarationLine = Number(line);
+                const [_varName, rangeStart] = key.split(' ');
+                if (targetRangeStart >= Number(rangeStart) && Number(rangeStart) > relevantDeclarationRangeStart) {
+                    relevantDeclarationRangeStart = Number(rangeStart);
                 }
             })
-            const address = discoveredStateVars[`${node.name} ${relevantDeclarationLine}`] || undefined;
-            if (!address) {
+            if (relevantDeclarationRangeStart === targetRangeStart) {
+                return
+            }
+            const addressValue = discoveredStateVars[`${node.name} ${relevantDeclarationRangeStart}`] || undefined;
+            if (!addressValue) {
                 return
             }
             addresses.push(
@@ -172,7 +186,7 @@ export const getAddresses = (contractInfo: Contract) => {
                     contractName,
                     address,
                     source: "state",
-                    getAddress: () => address,
+                    getAddress: () => addressValue,
                     parent,
                 }
             )
