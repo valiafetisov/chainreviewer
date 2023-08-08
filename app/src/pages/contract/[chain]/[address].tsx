@@ -20,18 +20,9 @@ const ContractMenuTitle = ({
   </p>
 )
 
-const ContractMenuFileItem = ({
-  filePath,
-  pathname,
-}: {
-  filePath: string
-  pathname: string
-}) => (
+const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
-    href={{
-      pathname: pathname,
-      query: { filePath },
-    }}
+    href={`#${filePath}`}
     className="w-full bg-blue-50 py-1 px-2 break-words"
   >
     {filePath}
@@ -98,7 +89,15 @@ export default function Address() {
     <div className="flex gap-2 h-screen">
       <div className="flex-1 max-w-[calc(100%-20rem)] h-full overflow-scroll">
         {constracts.map((contract) => (
-          <Highlight key={contract.contractPath} code={contract.sourceCode} />
+          <div key={contract.contractPath}>
+            <h1
+              id={contract.contractPath}
+              className="text-xl font-bold bg-white sticky top-0 z-10"
+            >
+              {contract.contractPath}
+            </h1>
+            <Highlight code={contract.sourceCode} />
+          </div>
         ))}
       </div>
       <div className="flex flex-col gap-4 w-80 h-full overflow-scroll">
@@ -109,7 +108,6 @@ export default function Address() {
               <ContractMenuFileItem
                 key={contract.contractPath}
                 filePath={contract.contractPath}
-                pathname={`/contract/${chain}/${address}`}
               />
             </>
           ))}
