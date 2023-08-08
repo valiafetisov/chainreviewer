@@ -73,7 +73,7 @@ export default async function handler(
     // When there are only one contract
     contracts.push({
       ...contractBase,
-      contractPath: '/',
+      contractPath: `/${contractBase.contractName}.sol`,
       sourceCode: data.result[0].SourceCode,
     })
   }

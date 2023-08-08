@@ -55,13 +55,18 @@ export default function Address() {
     [address]
   )
   const [constracts, setContracts] = useState<Contract[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (address && parsedChain.success && isAddressValid) {
+      setIsLoading(true)
       fetch(`/api/address/${chain}/${address}`)
         .then((res) => res.json())
         .then((data) => {
           setContracts(data.contracts)
+        })
+        .finally(() => {
+          setIsLoading(false)
         })
     }
   }, [address, chain, isAddressValid, parsedChain.success])
@@ -88,17 +93,25 @@ export default function Address() {
   return (
     <div className="flex gap-2 h-screen">
       <div className="flex-1 max-w-[calc(100%-20rem)] h-full overflow-scroll">
-        {constracts.map((contract) => (
-          <div key={contract.contractPath}>
-            <h1
-              id={contract.contractPath}
-              className="text-xl font-bold bg-white sticky top-0 z-10"
-            >
-              {contract.contractPath}
-            </h1>
-            <Highlight code={contract.sourceCode} />
+        {isLoading ? (
+          <div>
+            <p>Loading...</p>
           </div>
-        ))}
+        ) : (
+          <div>
+            {constracts.map((contract) => (
+              <div key={contract.id}>
+                <h1
+                  id={contract.contractPath}
+                  className="text-xl font-bold bg-white sticky top-0 z-10"
+                >
+                  {contract.contractPath}
+                </h1>
+                <Highlight code={contract.sourceCode} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-4 w-80 h-full overflow-scroll">
         <div className="bg-white flex flex-col gap-[3px] relative">
@@ -106,7 +119,7 @@ export default function Address() {
           {constracts.map((contract) => (
             <>
               <ContractMenuFileItem
-                key={contract.contractPath}
+                key={contract.id}
                 filePath={contract.contractPath}
               />
             </>
