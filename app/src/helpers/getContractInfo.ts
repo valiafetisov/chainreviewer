@@ -76,7 +76,7 @@ export default async function getContractInfo(
       abi: data.result[0].ABI,
       compilerVersion: data.result[0].CompilerVersion,
       optimizationUsed: Number(data.result[0].OptimizationUsed),
-      runs: data.result[0].Runs,
+      runs: Number(data.result[0].Runs),
       constructorArguments: data.result[0].ConstructorArguments,
       evmVersion: data.result[0].EVMVersion,
       library: data.result[0].Library,

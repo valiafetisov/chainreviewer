@@ -20,7 +20,7 @@ model Contract {
   abi                  String
   compilerVersion      String
   optimizationUsed     Int
-  runs                 String  @default("")
+  runs                 Int  
   constructorArguments String  @default("")
   evmVersion           String
   library              String  @default("")
