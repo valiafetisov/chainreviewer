@@ -1,0 +1,3 @@
+.chainSelect :global(.ant-select-selector) {
+  @apply rounded-r-none border-r-0 !important;
+}

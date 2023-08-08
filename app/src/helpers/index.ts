@@ -1,7 +1,7 @@
-import type { supportedChain } from '~/types'
+import type { SupportedChain } from '~/types'
 
 export const chainConfig: Readonly<
-  Record<supportedChain, { endpoint: string; apiKey: string | undefined }>
+  Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
 > = {
   mainnet: {
     endpoint: 'https://api.etherscan.io',
@@ -23,3 +23,6 @@ export const chainConfig: Readonly<
 
 export const firstLetterUppercase = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1)
+
+export const shortendAddress = (address: string) =>
+  `${address.slice(0, 5)}...${address.slice(-3)}`

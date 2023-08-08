@@ -1,4 +1,4 @@
 import { z } from 'zod'
 import { supportedChain } from '~/schemas'
 
-export type supportedChain = z.infer<typeof supportedChain>
+export type SupportedChain = z.infer<typeof supportedChain>

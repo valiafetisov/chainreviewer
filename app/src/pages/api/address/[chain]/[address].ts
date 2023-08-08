@@ -78,9 +78,10 @@ export default async function handler(
     })
   }
 
+  const createdContracts = []
   for (const contract of contracts) {
-    await prisma.contract.create({ data: contract })
+    createdContracts.push(await prisma.contract.create({ data: contract }))
   }
 
-  res.status(200).json({ contracts })
+  res.status(200).json({ contracts: createdContracts })
 }

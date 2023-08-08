@@ -4,9 +4,11 @@ import { useRouter } from 'next/router'
 import { Select, Input, Button } from 'antd'
 import { supportedChain } from '~/schemas'
 import { firstLetterUppercase } from '~/helpers'
+import type { SupportedChain } from '~/types'
+import styles from './index.module.css'
 
 export default function Home() {
-  const [chain, setChain] = useState(supportedChain.options[0])
+  const [chain, setChain] = useState<SupportedChain>(supportedChain.options[0])
   const [address, setAddress] = useState('')
   const router = useRouter()
 
@@ -18,25 +20,28 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center gap-7 flex-1">
       <h1 className="text-4xl font-bold">SideScan</h1>
-      <form onSubmit={searchContract}>
+      <form onSubmit={searchContract} className="flex justify-center">
         <div className="flex w-full max-w-2xl">
-          <Select
-            value={chain}
-            onChange={setChain}
-            options={supportedChain.options.map((chain) => ({
-              label: firstLetterUppercase(chain),
-              value: chain,
-            }))}
-            style={{ width: 160 }}
-          />
-          <Input
-            value={address}
-            placeholder="Contract Address 0x..."
-            onChange={(val) => setAddress(val.target.value)}
-          />
-          <Button className="bg-primary" type="primary" htmlType="submit">
-            View Source Code
-          </Button>
+          <Button.Group className="w-full">
+            <Select
+              value={chain}
+              onChange={setChain}
+              options={supportedChain.options.map((chain) => ({
+                label: firstLetterUppercase(chain),
+                value: chain,
+              }))}
+              className={styles.chainSelect}
+            />
+            <Input
+              value={address}
+              placeholder="Contract Address 0x..."
+              onChange={(val) => setAddress(val.target.value)}
+              style={{ borderRadius: '0px' }}
+            />
+            <Button className="bg-primary" type="primary" htmlType="submit">
+              View Source Code
+            </Button>
+          </Button.Group>
         </div>
       </form>
       <p className="text-gray-500">
