@@ -6,26 +6,33 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
+import styles from './address.module.css'
 
 const ContractMenuTitle = ({
   title,
+  className,
   total,
 }: {
   title: string
-  total: number
+  className?: string
+  total?: number
 }) => (
-  <p className="w-full bg-blue-100 py-1 px-2">
-    <span className="font-bold">{title}</span>&nbsp;
-    <span>({total} total)</span>
+  <p
+    className={`w-full bg-blue-100 py-1 px-2 ${className} ${styles.reverseElipsis}`}
+  >
+    <span title={title} className="font-bold">
+      {title}
+    </span>
+    &nbsp;
+    {total && <span>({total} total)</span>}
   </p>
 )
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
-  <Link
-    href={`#${filePath}`}
-    className="w-full bg-blue-50 py-1 px-2 break-words"
-  >
-    {filePath}
+  <Link href={`#${filePath}`} className="w-full bg-blue-50 py-1 px-2">
+    <span title={filePath} className={styles.reverseElipsis}>
+      {filePath}
+    </span>
   </Link>
 )
 
@@ -97,9 +104,10 @@ export default function Address() {
           <div>
             {constracts.map((contract) => (
               <div key={contract.id} id={contract.contractPath}>
-                <h1 className="text-xl font-bold bg-white sticky top-0 z-10">
-                  {contract.contractPath}
-                </h1>
+                <ContractMenuTitle
+                  className="sticky top-0 z-10"
+                  title={contract.contractPath}
+                />
                 <Highlight code={contract.sourceCode} />
               </div>
             ))}
