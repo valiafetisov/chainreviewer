@@ -1,7 +1,7 @@
 import { useState, SyntheticEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Select, Input, Button } from 'antd'
+import { Select, Input, Button, Space } from 'antd'
 import { firstLetterUppercase } from '~/helpers'
 import type { SupportedChain } from '~/types'
 import styles from './index.module.css'
@@ -27,26 +27,28 @@ export default function Home() {
         className="flex justify-center w-full max-w-2xl"
       >
         <div className="flex w-full max-w-2xl">
-          <Button.Group className="w-full">
-            <Select
-              value={chain}
-              onChange={setChain}
-              options={Object.keys(chainConfigs).map((chain) => ({
-                label: firstLetterUppercase(chain),
-                value: chain,
-              }))}
-              className={styles.chainSelect}
-            />
+          <Space.Compact className="w-full">
             <Input
               value={address}
               placeholder="Contract Address 0x..."
               onChange={(val) => setAddress(val.target.value)}
               style={{ borderRadius: '0px' }}
+              addonBefore={
+                <Select
+                  value={chain}
+                  onChange={setChain}
+                  options={Object.keys(chainConfigs).map((chain) => ({
+                    label: firstLetterUppercase(chain),
+                    value: chain,
+                  }))}
+                  className={styles.chainSelect}
+                />
+              }
             />
             <Button className="bg-primary" type="primary" htmlType="submit">
               View Source Code
             </Button>
-          </Button.Group>
+          </Space.Compact>
         </div>
       </form>
       <p className="text-gray-500">
