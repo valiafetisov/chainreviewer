@@ -7,12 +7,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import styles from './address.module.css'
+import type { AddressInfo } from '~/types'
 
 const ContractMenuTitle = ({
   title,
   className,
   total,
-  isLoading
+  isLoading,
 }: {
   title: string
   className?: string
@@ -26,17 +27,20 @@ const ContractMenuTitle = ({
       {title}
     </span>
     &nbsp;
-    {
-      isLoading
-        ? <span>Loading...</span>
-        : total && <span>({total} total)</span>
-    }
+    {isLoading ? (
+      <span>Loading...</span>
+    ) : (
+      total && <span>({total} total)</span>
+    )}
   </p>
 )
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
-  <Link href={`#${filePath}`} className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary">
-    <span title={filePath} className={styles.reverseElipsis} dir='rtl'>
+  <Link
+    href={`#${filePath}`}
+    className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary"
+  >
+    <span title={filePath} className={styles.reverseElipsis} dir="rtl">
       &lrm;{filePath}
     </span>
   </Link>
@@ -45,20 +49,24 @@ const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
 const ContractMenuReferenceItem = ({
   source,
   address,
-  name,
+  contractPath,
   chain,
 }: {
   source: string
   address: string
-  name: string
+  contractPath: string
   chain: string
 }) => (
-  <Link href={`/contract/${chain}/${address}`} target='_blank' className="w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary">
+  <Link
+    href={`/contract/${chain}/${address}`}
+    target="_blank"
+    className="w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
+  >
     <div className="flex justify-between break-words">
       <p>Source: {source}</p>
-      <p>{shortendAddress(address)}</p>
+      <p title={address}>{shortendAddress(address)}</p>
     </div>
-    <p>{name}</p>
+    <p>{contractPath}</p>
   </Link>
 )
 
@@ -70,18 +78,32 @@ export default function Address() {
     [address]
   )
   const [constracts, setContracts] = useState<Contract[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingContracts, setIsLoadingContracs] = useState(false)
+  const [addressInfos, setAddressInfos] = useState<
+    Record<string, AddressInfo[]>
+  >({})
+  const [isLoadingAddressInfos, setIsLoadingAddressInfos] = useState(false)
 
   useEffect(() => {
     if (address && chainConfig && isAddressValid) {
-      setIsLoading(true)
+      setIsLoadingContracs(true)
       fetch(`/api/address/${chain}/${address}`)
         .then((res) => res.json())
         .then((data) => {
           setContracts(data.contracts)
         })
         .finally(() => {
-          setIsLoading(false)
+          setIsLoadingContracs(false)
+        })
+
+      setIsLoadingAddressInfos(true)
+      fetch(`/api/linking/${chain}/${address}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setAddressInfos(data.addresses)
+        })
+        .finally(() => {
+          setIsLoadingAddressInfos(false)
         })
     }
   }, [address, chain, isAddressValid, chainConfig])
@@ -104,7 +126,7 @@ export default function Address() {
   return (
     <div className="flex gap-3">
       <div className="flex-1 max-w-[calc(100%-21rem)] h-full">
-        {isLoading ? (
+        {isLoadingContracts ? (
           <div>
             <p>Loading...</p>
           </div>
@@ -129,7 +151,7 @@ export default function Address() {
           <div className="bg-white flex flex-col gap-1">
             <ContractMenuTitle
               title="Files"
-              isLoading={isLoading}
+              isLoading={isLoadingContracts}
               total={constracts.length}
             />
             {constracts.map((contract) => (
@@ -143,25 +165,25 @@ export default function Address() {
           </div>
           <div className="bg-white">
             <div className="bg-white flex flex-col gap-1">
-              <ContractMenuTitle title="References" total={3} isLoading={isLoading} />
-              <ContractMenuReferenceItem
-                chain={chain as string}
-                source="code"
-                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-                name="LedingProtocolProvider"
-                />
-              <ContractMenuReferenceItem
-                chain={chain as string}
-                source="code"
-                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-                name="POOL"
-                />
-              <ContractMenuReferenceItem
-                chain={chain as string}
-                source="state"
-                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-                name="POOL_STATE"
+              <ContractMenuTitle
+                title="References"
+                isLoading={isLoadingContracts || isLoadingAddressInfos}
+                total={Object.values(addressInfos).reduce(
+                  (total, arr) => total + arr.length,
+                  0
+                )}
               />
+              {Object.values(addressInfos).map((arr) =>
+                arr.map((addressInfo, idx) => (
+                  <ContractMenuReferenceItem
+                    key={idx}
+                    chain={chain as string}
+                    source={addressInfo.source}
+                    address={addressInfo.address}
+                    contractPath={addressInfo.contractPath}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>
