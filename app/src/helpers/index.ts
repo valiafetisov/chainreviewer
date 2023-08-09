@@ -1,7 +1,11 @@
 export const chainConfigs: Readonly<
   Record<string, { endpoint: string; apiKey: string | undefined }>
 > = {
-  mainnet: {
+  mode: {
+    endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
+    apiKey: undefined,
+  },
+  ethereum: {
     endpoint: 'https://api.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
@@ -16,10 +20,6 @@ export const chainConfigs: Readonly<
   optimism: {
     endpoint: 'https://api-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
-  },
-  mode: {
-    endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
-    apiKey: undefined
   },
 }
 
