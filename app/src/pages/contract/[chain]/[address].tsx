@@ -12,26 +12,32 @@ const ContractMenuTitle = ({
   title,
   className,
   total,
+  isLoading
 }: {
   title: string
   className?: string
   total?: number
+  isLoading?: boolean
 }) => (
   <p
-    className={`w-full bg-blue-100 py-1 px-2 ${className} ${styles.reverseElipsis}`}
+    className={`w-full bg-neutral-200 py-1 px-2 ${className} ${styles.reverseElipsis}`}
   >
     <span title={title} className="font-bold">
       {title}
     </span>
     &nbsp;
-    {total && <span>({total} total)</span>}
+    {
+      isLoading
+        ? <span>Loading...</span>
+        : total && <span>({total} total)</span>
+    }
   </p>
 )
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
-  <Link href={`#${filePath}`} className="w-full bg-blue-50 py-1 px-2">
-    <span title={filePath} className={styles.reverseElipsis}>
-      {filePath}
+  <Link href={`#${filePath}`} className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary">
+    <span title={filePath} className={styles.reverseElipsis} dir='rtl'>
+      &lrm;{filePath}
     </span>
   </Link>
 )
@@ -40,18 +46,20 @@ const ContractMenuReferenceItem = ({
   source,
   address,
   name,
+  chain,
 }: {
   source: string
   address: string
   name: string
+  chain: string
 }) => (
-  <div className="w-full bg-blue-50 py-2 px-2">
+  <Link href={`/contract/${chain}/${address}`} target='_blank' className="w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary">
     <div className="flex justify-between break-words">
       <p>Source: {source}</p>
       <p>{shortendAddress(address)}</p>
     </div>
     <p>{name}</p>
-  </div>
+  </Link>
 )
 
 export default function Address() {
@@ -94,8 +102,8 @@ export default function Address() {
   }
 
   return (
-    <div className="flex gap-3 h-screen">
-      <div className="flex-1 max-w-[calc(100%-20rem)] h-full overflow-scroll">
+    <div className="flex gap-3">
+      <div className="flex-1 max-w-[calc(100%-21rem)] h-full">
         {isLoading ? (
           <div>
             <p>Loading...</p>
@@ -108,46 +116,53 @@ export default function Address() {
                   className="sticky top-0 z-10"
                   title={contract.contractPath}
                 />
-                <Highlight code={contract.sourceCode} />
+                <div className="-mt-[2px] bg-neutral-900">
+                  <Highlight code={contract.sourceCode} />
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
-      <div className="flex flex-col gap-3 w-80 h-full overflow-scroll">
-        <div className="bg-white flex flex-col gap-[3px] relative">
-          <ContractMenuTitle
-            title="File"
-            total={constracts.length}
-            className="mb-1"
-          />
-          {constracts.map((contract) => (
-            <>
-              <ContractMenuFileItem
-                key={contract.id}
-                filePath={contract.contractPath}
+      <div>
+        <div className="flex flex-col gap-3 w-80 sticky top-0 h-screen overflow-scroll">
+          <div className="bg-white flex flex-col gap-1">
+            <ContractMenuTitle
+              title="Files"
+              isLoading={isLoading}
+              total={constracts.length}
+            />
+            {constracts.map((contract) => (
+              <>
+                <ContractMenuFileItem
+                  key={contract.id}
+                  filePath={contract.contractPath}
+                />
+              </>
+            ))}
+          </div>
+          <div className="bg-white">
+            <div className="bg-white flex flex-col gap-1">
+              <ContractMenuTitle title="References" total={3} isLoading={isLoading} />
+              <ContractMenuReferenceItem
+                chain={chain as string}
+                source="code"
+                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+                name="LedingProtocolProvider"
+                />
+              <ContractMenuReferenceItem
+                chain={chain as string}
+                source="code"
+                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+                name="POOL"
+                />
+              <ContractMenuReferenceItem
+                chain={chain as string}
+                source="state"
+                address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+                name="POOL_STATE"
               />
-            </>
-          ))}
-        </div>
-        <div className="bg-white">
-          <div className="bg-white flex flex-col gap-[3px]">
-            <ContractMenuTitle title="References" total={3} />
-            <ContractMenuReferenceItem
-              source="code"
-              address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-              name="LedingProtocolProvider"
-            />
-            <ContractMenuReferenceItem
-              source="code"
-              address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-              name="POOL"
-            />
-            <ContractMenuReferenceItem
-              source="state"
-              address="0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
-              name="POOL_STATE"
-            />
+            </div>
           </div>
         </div>
       </div>
