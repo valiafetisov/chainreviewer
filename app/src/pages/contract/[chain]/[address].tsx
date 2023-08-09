@@ -44,6 +44,18 @@ const ContractMenuReferenceItem = ({
   </Link>
 )
 
+// TODO: add AttestationMenuItem props
+// isMine
+// isMyFollowers
+// address
+// attestation {address, attestedAt, isRevoked}
+// clickIcon
+// onClickIcon
+// onAttest
+// onRevoke
+
+const AttestationMenuItem = () => {}
+
 export default function Address() {
   const { chain, address } = useDynamicRouteParams()
   const chainConfig = chainConfigs[chain as string]
@@ -144,6 +156,11 @@ export default function Address() {
               <MenuEmpty />
             )}
           </div>
+
+          <div>
+            <MenuTitle title="Attestations" total={5} isLoading={isLoading} />
+          </div>
+
           <div className="bg-white">
             <div className="bg-white flex flex-col gap-1">
               <MenuTitle title="References" total={3} isLoading={isLoading} />
