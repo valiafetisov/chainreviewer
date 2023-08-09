@@ -116,7 +116,7 @@ export default function Address() {
                   className="sticky top-0 z-10"
                   title={contract.contractPath}
                 />
-                <div className="-mt-[2px] bg-neutral-900">
+                <div className="-mt-[2px]">
                   <Highlight code={contract.sourceCode} />
                 </div>
               </div>

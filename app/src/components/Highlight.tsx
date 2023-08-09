@@ -1,20 +1,35 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Prism from 'prismjs'
-import 'prismjs/themes/prism-okaidia.css'
+import 'prism-themes/themes/prism-one-light.css'
 
 type HighlightProps = {
   code: string
 }
 
 const Highlight = ({ code }: HighlightProps) => {
+  // const code
+  const myContainer = useRef(null);
+  Prism.hooks.add('wrap', function(env) {
+    console.log('env', env.token, env)
+    if (env.token === 'entity') {
+      env.attributes['title'] = env.content.replace(/&amp;/, '&');
+    }
+  });
+
   useEffect(() => {
-    // Highlight code
-    Prism.highlightAll()
-  }, [])
+    if (!myContainer.current) {
+      return
+    }
+    Prism.highlightElement(myContainer.current)
+  }, [myContainer])
 
   return (
-    <pre style={{ fontSize: '0.85rem', marginTop: '0px' }}>
-      <code className="language-solidity line-numbers">{code}</code>
+    <pre style={{ fontSize: '0.75rem', marginTop: '0px', background: 'red !important' }}>
+      <code
+        ref={myContainer}
+        style={{ background: 'red !important' }}
+        className="language-solidity line-numbers"
+      >{code}</code>
     </pre>
   )
 }
