@@ -145,10 +145,10 @@ export default function Address() {
       constracts
         .map((contract) => ({
           ...contract,
-          contractPath: contract.contractPath.toLowerCase(),
+          lowerCasePath: contract.contractPath.toLowerCase(),
         }))
         .filter((contract) =>
-          contract.contractPath.includes(search.toLowerCase())
+          contract.lowerCasePath.includes(search.toLowerCase())
         ),
     [constracts, search]
   )
@@ -218,12 +218,10 @@ export default function Address() {
               setSearch={setSearch}
             />
             {searchedContracts.map((contract) => (
-              <>
-                <ContractMenuFileItem
-                  key={contract.id}
-                  filePath={contract.contractPath}
-                />
-              </>
+              <ContractMenuFileItem
+                key={contract.id}
+                filePath={contract.contractPath}
+              />
             ))}
           </div>
           <div className="bg-white">
