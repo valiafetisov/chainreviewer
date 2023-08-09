@@ -6,99 +6,15 @@ import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
-import styles from './address.module.css'
-import { Input, Button } from 'antd'
-import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai'
-
-const ContractMenuTitle = ({
-  title,
-  className,
-  total,
-  isLoading,
-}: {
-  title: string
-  className?: string
-  total?: number
-  isLoading?: boolean
-}) => (
-  <p
-    className={`w-full bg-neutral-200 py-1 px-2 ${className} ${styles.reverseElipsis}`}
-  >
-    <span title={title} className="font-bold">
-      {title}
-    </span>
-    &nbsp;
-    {isLoading ? (
-      <span>Loading...</span>
-    ) : (
-      total && <span>({total} total)</span>
-    )}
-  </p>
-)
-
-const ContractMenuTitleWithSearch = ({
-  title,
-  className,
-  total,
-  isLoading,
-  isSearchShown,
-  setIsSearchShown,
-  search,
-  setSearch,
-}: {
-  title: string
-  className?: string
-  total?: number
-  isLoading?: boolean
-  isSearchShown: boolean
-  search: string
-  setIsSearchShown: (isShown: boolean) => void
-  setSearch: (search: string) => void
-}) =>
-  !isSearchShown ? (
-    <div
-      className={`w-full bg-neutral-200 py-1 px-2 flex justify-between items-center ${className}`}
-    >
-      <div className="inline-block">
-        <span title={title} className="font-bold  ${styles.reverseElipsis}">
-          {title}
-        </span>
-        &nbsp;
-        {isLoading ? (
-          <span>Loading...</span>
-        ) : (
-          total && <span>({total} total)</span>
-        )}
-      </div>
-      <AiOutlineSearch
-        className="text-primary"
-        onClick={() => setIsSearchShown(true)}
-      />
-    </div>
-  ) : (
-    <Button.Group>
-      <Input
-        autoFocus
-        value={search}
-        onChange={(val) => setSearch(val.target.value)}
-        allowClear
-      />
-      <Button
-        icon={<AiOutlineCloseCircle />}
-        onClick={() => {
-          setIsSearchShown(false)
-          setSearch('')
-        }}
-      />
-    </Button.Group>
-  )
+import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
+import MenuEmpty from '~/components/MenuEmpty'
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
     href={`#${filePath}`}
     className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary"
   >
-    <span title={filePath} className={styles.reverseElipsis} dir="rtl">
+    <span title={filePath} className="reverseElipsis" dir="rtl">
       &lrm;{filePath}
     </span>
   </Link>
@@ -193,7 +109,7 @@ export default function Address() {
           <div>
             {constracts.map((contract) => (
               <div key={contract.id} id={contract.contractPath}>
-                <ContractMenuTitle
+                <MenuTitle
                   className="sticky top-0 z-10"
                   title={contract.contractPath}
                 />
@@ -208,7 +124,7 @@ export default function Address() {
       <div>
         <div className="flex flex-col gap-3 w-80 sticky top-0 h-screen overflow-scroll">
           <div className="bg-white flex flex-col gap-1">
-            <ContractMenuTitleWithSearch
+            <MenuTitleWithSearch
               title="Files"
               isLoading={isLoading}
               total={constracts.length}
@@ -217,20 +133,20 @@ export default function Address() {
               search={search}
               setSearch={setSearch}
             />
-            {searchedContracts.map((contract) => (
-              <ContractMenuFileItem
-                key={contract.id}
-                filePath={contract.contractPath}
-              />
-            ))}
+            {searchedContracts.length ? (
+              searchedContracts.map((contract) => (
+                <ContractMenuFileItem
+                  key={contract.id}
+                  filePath={contract.contractPath}
+                />
+              ))
+            ) : (
+              <MenuEmpty />
+            )}
           </div>
           <div className="bg-white">
             <div className="bg-white flex flex-col gap-1">
-              <ContractMenuTitle
-                title="References"
-                total={3}
-                isLoading={isLoading}
-              />
+              <MenuTitle title="References" total={3} isLoading={isLoading} />
               <ContractMenuReferenceItem
                 chain={chain as string}
                 source="code"
