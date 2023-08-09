@@ -31,7 +31,7 @@ const ConnectBtn = () => {
                 return (
                   <Button
                     onClick={openConnectModal}
-                    className="font-bold bg-primary"
+                    className="font-bold bg-primary rounded shadow-none"
                     type="primary"
                   >
                     Connect Wallet
@@ -42,7 +42,7 @@ const ConnectBtn = () => {
                 return (
                   <Button
                     onClick={openChainModal}
-                    className="bg-red-500 text-white font-bold"
+                    className="bg-red-500 text-white font-bold rounded shadow-none"
                   >
                     Wrong network
                   </Button>
@@ -53,7 +53,7 @@ const ConnectBtn = () => {
                   <Button
                     onClick={openChainModal}
                     style={{ display: 'flex', alignItems: 'center' }}
-                    className="font-bold bg-white px-2 py-1 rounded-md"
+                    className="font-bold bg-white px-2 py-1 rounded shadow-none border-white"
                   >
                     {chain.hasIcon && (
                       <div
@@ -80,7 +80,7 @@ const ConnectBtn = () => {
                   </Button>
                   <Button
                     onClick={openAccountModal}
-                    className="font-bold bg-primary"
+                    className="font-bold bg-primary rounded shadow-none"
                     type="primary"
                   >
                     {account.displayName}
