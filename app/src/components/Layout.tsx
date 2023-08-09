@@ -18,12 +18,16 @@ export default function RootLayout({
 }) {
   const [mounted, setMounted] = useState(false)
   const [headerText, setHeaderText] = useState('')
-  const { chain, address } = useDynamicRouteParams()
+  const { pathname, chain, address } = useDynamicRouteParams()
 
   useEffect(() => setMounted(true), [])
   useEffect(() => {
-    if (chain && address) {
+    if (pathname.includes('contract') && chain && address) {
       setHeaderText(`${firstLetterUppercase(chain as string)} / ${address}`)
+      return
+    }
+    if (pathname.includes('user') && address) {
+      setHeaderText(`${address}`)
       return
     }
 
