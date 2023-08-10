@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react'
 import Prism from 'prismjs'
+import Link from 'next/link'
 import 'prism-themes/themes/prism-one-light.css'
 
 type HighlightProps = {
   code: string
+  chain: string
 }
 
 const references = [
@@ -21,51 +23,35 @@ const references = [
   },
 ]
 
-const addLinksToCode = (code: string, references: any) => {
-  // 0x000000000000000000636F6e736F6c652e6c6f67
-  if (!code) return code
-  const lines = code.split(/\r?\n/)
-  for (const reference of references) {
-    const lineNumber = reference.locStartLine - 1
-    const line = lines[lineNumber]
-    const startCol = reference.locStartCol
-    const endCol = startCol + (reference.rangeTo - reference.rangeFrom) + 1
-    const start = line.substring(0, startCol)
-    const middle = line.substring(startCol, endCol)
-    const end = line.substring(endCol)
-    const output = `${start}<a href="${reference.address}">${middle}</a>${end}`;
-    // const output = `${start}<mark>${middle}</mark>${end}`;
-    lines[lineNumber] = output
-    console.log('line, start, middle, end, output', line, start, middle, end, output)
-  }
-  return lines.join('\n')
-}
-
-const Highlight = ({ code }: HighlightProps) => {
-  const formattedCode = addLinksToCode(code, references)
-
+const Highlight = ({ code, chain }: HighlightProps) => {
   const myContainer = useRef(null);
-  // Prism.hooks.add('wrap', function(env) {
-  //   console.log('env', env.token, env)
-  //   if (env.token === 'entity') {
-  //     env.attributes['title'] = env.content.replace(/&amp;/, '&');
-  //   }
-  // });
-
   useEffect(() => {
     if (!myContainer.current) {
       return
     }
     Prism.highlightElement(myContainer.current)
   }, [myContainer])
+  const numberOfLines = code.match(/\r?\n/g)?.length ?? 0 + 1
+  const numberWidth = numberOfLines.toString().length
 
   return (
-    <pre style={{ fontSize: '0.75rem', marginTop: '0px', background: 'red !important' }}>
+    <pre className='relative' style={{ fontSize: '0.75rem', marginTop: '0px' }}>
       <code
         ref={myContainer}
         style={{ background: 'red !important' }}
-        className="language-solidity line-numbers keep-markup"
-      >{formattedCode}</code>
+        className="language-solidity line-numbers"
+      >{code}</code>
+      {references.map((r, index) => {
+        const width = r.rangeTo - r.rangeFrom + 1
+        const left = numberWidth + 2 + r.locStartCol
+        const widthMultiplier = 0.453
+        return <Link
+          key={index}
+          href={`/contract/${chain}/${r.address}`}
+          className='bg-red-500 absolute block mt-1 opacity-40'
+          style={{  height: '1rem', top: `${r.locStartLine}rem`, left: `${left * widthMultiplier}rem`, width: `${width * widthMultiplier}rem` }}
+        />
+      })}
     </pre>
   )
 }

@@ -5,7 +5,8 @@
       "prismjs",
       {
         "languages": ["javascript", "solidity", "markup"],
-        "plugins": ["line-numbers", "keep-markup"]
+        "plugins": ["line-numbers"],
+        "css": true
       }
     ]
   ]

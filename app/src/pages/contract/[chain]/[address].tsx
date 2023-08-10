@@ -117,7 +117,7 @@ export default function Address() {
                   title={contract.contractPath}
                 />
                 <div className="-mt-[2px]">
-                  <Highlight code={contract.sourceCode} />
+                  <Highlight code={contract.sourceCode} chain={chain} />
                 </div>
               </div>
             ))}
