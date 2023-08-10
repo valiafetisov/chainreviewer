@@ -95,7 +95,11 @@ export default function Address() {
         .finally(() => {
           setIsLoadingContracs(false)
         })
+    }
+  }, [address, chain, isAddressValid, chainConfig])
 
+  useEffect(() => {
+    if (constracts.length) {
       setIsLoadingAddressInfos(true)
       fetch(`/api/linking/${chain}/${address}`)
         .then((res) => res.json())
@@ -106,7 +110,7 @@ export default function Address() {
           setIsLoadingAddressInfos(false)
         })
     }
-  }, [address, chain, isAddressValid, chainConfig])
+  }, [constracts])
 
   if (!address || !chainConfig || !isAddressValid) {
     return (
