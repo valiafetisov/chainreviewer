@@ -25,7 +25,7 @@ export const getAddresses = (contractInfo: Contract) => {
                 {
                     contractPath,
                     contractName,
-                    address,
+                    address: node.number,
                     locStartLine: node.loc.start.line,
                     locStartCol: node.loc.start.column,
                     locEndLine: node.loc.end.line,
@@ -33,7 +33,6 @@ export const getAddresses = (contractInfo: Contract) => {
                     rangeFrom: node.range ? node.range[0] : undefined,
                     rangeTo: node.range ? node.range[1] : undefined,
                     source: "hardcoded",
-                    getAddress: () => node.number,
                     parent,
                 }
             ) : null
