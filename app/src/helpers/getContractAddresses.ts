@@ -81,8 +81,7 @@ export const getAddresses = (contractInfo: Contract) => {
                     contractPath,
                     contractName,
                     source: "variable",
-                    address,
-                    getAddress: () => initValue.number,
+                    address: initValue.number,
                     parent: variableDeclarationParent,
                 }
             )
@@ -106,10 +105,9 @@ export const getAddresses = (contractInfo: Contract) => {
                         {
                             ...getFlatLocationInfo(identifierNode),
                             contractPath,
-                            address,
+                            address: initValue.number,
                             contractName,
                             source: "variable",
-                            getAddress: () => initValue.number,
                             parent: identifierParent,
                         }
                     )
@@ -144,9 +142,8 @@ export const getAddresses = (contractInfo: Contract) => {
                     ...getFlatLocationInfo(variableDeclaration.identifier),
                     contractPath,
                     contractName,
-                    address,
+                    address: initValue.number,
                     source: "state",
-                    getAddress: () => initValue.number,
                     parent: variableDeclarationParent,
                 }
             )
@@ -182,9 +179,8 @@ export const getAddresses = (contractInfo: Contract) => {
                     ...getFlatLocationInfo(node),
                     contractPath,
                     contractName,
-                    address,
+                    address: addressValue,
                     source: "state",
-                    getAddress: () => addressValue,
                     parent,
                 }
             )
