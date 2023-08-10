@@ -1,26 +1,38 @@
-export const getChainConfig = (chain: string) => {
-  switch (chain) {
-    case 'mainnet':
-      return {
-        endpoint: 'https://api.etherscan.io',
-        apiKey: process.env.ETHERSCAN_API_KEY,
-      }
-    case 'goerli':
-      return {
-        endpoint: 'https://api-goerli.etherscan.io',
-        apiKey: process.env.ETHERSCAN_API_KEY,
-      }
-    case 'sepolia':
-      return {
-        endpoint: 'https://api-sepolia.etherscan.io',
-        apiKey: process.env.ETHERSCAN_API_KEY,
-      }
-    case 'optimism':
-      return {
-        endpoint: 'https://api-optimistic.etherscan.io',
-        apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
-      }
-    default:
-      throw new Error('Not supported chainID')
-  }
+export const chainConfigs: Readonly<
+  Record<string, { endpoint: string; apiKey: string | undefined }>
+> = {
+  mainnet: {
+    endpoint: 'https://api.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  goerli: {
+    endpoint: 'https://api-goerli.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  sepolia: {
+    endpoint: 'https://api-sepolia.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  optimism: {
+    endpoint: 'https://api-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
+  mode: {
+    endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
+    apiKey: undefined
+  },
 }
+
+export const getChainConfigs = (chain: string) => {
+  const config = chainConfigs[chain]
+  if (!config) {
+    throw new Error('Invalid chain')
+  }
+  return config
+}
+
+export const firstLetterUppercase = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1)
+
+export const shortendAddress = (address: string) =>
+  `${address.slice(0, 4)}...${address.slice(-4)}`

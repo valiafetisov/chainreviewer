@@ -20,11 +20,11 @@ model Contract {
   abi                  String
   compilerVersion      String
   optimizationUsed     Int
-  runs                 String
+  runs                 Int  
   constructorArguments String  @default("")
   evmVersion           String
   library              String  @default("")
-  licenseType          String
+  licenseType          String  @default("")
   proxy                String  @default("")
   implementation       String  @default("")
   swarmSource          String  @default("")

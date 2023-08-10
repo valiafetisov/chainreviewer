@@ -13,7 +13,7 @@ const Highlight = ({ code }: HighlightProps) => {
   }, [])
 
   return (
-    <pre>
+    <pre style={{ fontSize: '0.85rem', marginTop: '0px' }}>
       <code className="language-solidity line-numbers">{code}</code>
     </pre>
   )
