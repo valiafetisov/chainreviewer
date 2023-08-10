@@ -8,34 +8,7 @@ import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
-import styles from './address.module.css'
 import type { AddressInfo } from '~/types'
-
-const ContractMenuTitle = ({
-  title,
-  className,
-  total,
-  isLoading,
-}: {
-  title: string
-  className?: string
-  total?: number
-  isLoading?: boolean
-}) => (
-  <p
-    className={`w-full bg-neutral-200 py-1 px-2 ${className} ${styles.reverseElipsis}`}
-  >
-    <span title={title} className="font-bold">
-      {title}
-    </span>
-    &nbsp;
-    {isLoading ? (
-      <span>Loading...</span>
-    ) : (
-      total && <span>({total} total)</span>
-    )}
-  </p>
-)
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
@@ -81,7 +54,6 @@ const ContractMenuReferenceItem = ({
 // onClickIcon
 // onAttest
 // onRevoke
-
 const AttestationMenuItem = () => {}
 
 export default function Address() {
@@ -93,12 +65,12 @@ export default function Address() {
   )
   const [constracts, setContracts] = useState<Contract[]>([])
   const [isLoadingContracts, setIsLoadingContracs] = useState(false)
-  const [isSearchShown, setIsSearchShown] = useState(false)
-  const [search, setSearch] = useState('')
+  const [contractSearch, setContractSearch] = useState('')
   const [addressInfos, setAddressInfos] = useState<
     Record<string, AddressInfo[]>
   >({})
   const [isLoadingAddressInfos, setIsLoadingAddressInfos] = useState(false)
+  const [addressInfosSearch, setAddressInfosSearch] = useState('')
 
   const searchedContracts = useMemo(
     () =>
@@ -108,9 +80,31 @@ export default function Address() {
           lowerCasePath: contract.contractPath.toLowerCase(),
         }))
         .filter((contract) =>
-          contract.lowerCasePath.includes(search.toLowerCase())
+          contract.lowerCasePath.includes(contractSearch.toLowerCase())
         ),
-    [constracts, search]
+    [constracts, contractSearch]
+  )
+
+  const searchedAddressInfos = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(addressInfos).map(([filePath, addressInfos]) => [
+          filePath,
+          addressInfos.filter(
+            (addressInfo) =>
+              addressInfo.contractPath
+                .toLocaleLowerCase()
+                .includes(addressInfosSearch.toLowerCase()) ||
+              addressInfo.address
+                .toLocaleLowerCase()
+                .includes(addressInfosSearch.toLowerCase()) ||
+              addressInfo.source
+                .toLocaleLowerCase()
+                .includes(addressInfosSearch.toLowerCase())
+          ),
+        ])
+      ),
+    [addressInfos, addressInfosSearch]
   )
 
   useEffect(() => {
@@ -186,10 +180,8 @@ export default function Address() {
               title="Files"
               isLoading={isLoadingContracts}
               total={constracts.length}
-              isSearchShown={isSearchShown}
-              setIsSearchShown={setIsSearchShown}
-              search={search}
-              setSearch={setSearch}
+              search={contractSearch}
+              setSearch={setContractSearch}
             />
             {searchedContracts.length ? (
               searchedContracts.map((contract) => (
@@ -213,15 +205,17 @@ export default function Address() {
 
           <div className="bg-white">
             <div className="bg-white flex flex-col gap-1">
-              <ContractMenuTitle
+              <MenuTitleWithSearch
                 title="References"
                 isLoading={isLoadingContracts || isLoadingAddressInfos}
-                total={Object.values(addressInfos).reduce(
+                total={Object.values(searchedAddressInfos).reduce(
                   (total, arr) => total + arr.length,
                   0
                 )}
+                search={addressInfosSearch}
+                setSearch={setAddressInfosSearch}
               />
-              {Object.values(addressInfos).map((arr) =>
+              {Object.values(searchedAddressInfos).map((arr) =>
                 arr.map((addressInfo, idx) => (
                   <ContractMenuReferenceItem
                     key={idx}

@@ -1,6 +1,6 @@
-import styles from './MenuTitle.module.css'
 import { Input, Button } from 'antd'
 import { AiOutlineSearch, AiOutlineCloseCircle } from 'react-icons/ai'
+import { useState } from 'react'
 
 type MenuTitleProps = {
   title: string
@@ -20,11 +20,7 @@ export const MenuTitle = ({
       {title}
     </span>
     &nbsp;
-    {isLoading ? (
-      <span>Loading...</span>
-    ) : (
-      total && <span>({total} total)</span>
-    )}
+    {isLoading ? <span>Loading...</span> : <span>({total} total)</span>}
   </p>
 )
 
@@ -33,8 +29,6 @@ export const MenuTitleWithSearch = ({
   className,
   total,
   isLoading,
-  isSearchShown,
-  setIsSearchShown,
   search,
   setSearch,
 }: {
@@ -42,12 +36,12 @@ export const MenuTitleWithSearch = ({
   className?: string
   total?: number
   isLoading?: boolean
-  isSearchShown: boolean
   search: string
-  setIsSearchShown: (isShown: boolean) => void
   setSearch: (search: string) => void
-}) =>
-  !isSearchShown ? (
+}) => {
+  const [isSearchShown, setIsSearchShown] = useState(false)
+
+  return !isSearchShown ? (
     <div
       className={`w-full bg-neutral-200 py-1 px-2 flex justify-between items-center transition duration-300 ${className}`}
     >
@@ -84,3 +78,4 @@ export const MenuTitleWithSearch = ({
       />
     </Button.Group>
   )
+}
