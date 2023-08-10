@@ -20,7 +20,11 @@ export const MenuTitle = ({
       {title}
     </span>
     &nbsp;
-    {isLoading ? <span>Loading...</span> : <span>({total} total)</span>}
+    {isLoading ? (
+      <span>Loading...</span>
+    ) : total !== undefined ? (
+      <span>({total} total)</span>
+    ) : null}
   </p>
 )
 
@@ -52,9 +56,9 @@ export const MenuTitleWithSearch = ({
         &nbsp;
         {isLoading ? (
           <span>Loading...</span>
-        ) : (
-          total && <span>({total} total)</span>
-        )}
+        ) : total !== undefined ? (
+          <span>({total} total)</span>
+        ) : null}
       </div>
       <AiOutlineSearch
         className="text-primary"
