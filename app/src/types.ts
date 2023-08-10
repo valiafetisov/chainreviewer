@@ -1,4 +1,4 @@
-import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types'
+import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types';
 import { chainConfigs } from '~/helpers'
 
 export type SupportedChain = keyof typeof chainConfigs
@@ -20,6 +20,5 @@ export declare interface AddressInfo {
     | 'external_function'
     | 'private_function'
     | 'state'
-  getAddress: (...args: any[]) => string
   parent: ASTNode | undefined
 }
