@@ -10,7 +10,6 @@ export declare interface AddressInfo {
     rangeTo?: number;
     rangeFrom?: number;
     source: "variable" | "hardcoded" | "interface" | "public_function" | "external_function" | "private_function" | "state";
-    getAddress: (...args: any[]) => string,
     parent: ASTNode | undefined,
 }
 
