@@ -34,6 +34,25 @@ function getFlatLocationInfo(node: ASTNode | BaseASTNode) {
   }
 }
 
+const findMatchingId = (discovered: Record<string, string>, name: string, range?: [number, number]) => {
+  const stateVarsWithMatchingName = Object.keys(discovered).filter(key => key.startsWith(`${name} `));
+  if (stateVarsWithMatchingName.length === 0) {
+    return
+  }
+  const targetRangeStart = range ? range[0] : undefined;
+  if (!targetRangeStart) {
+    return
+  }
+  let relevantDeclarationRangeStart: number = 0;
+  stateVarsWithMatchingName.forEach(key => {
+    const [_varName, rangeStart] = key.split(' ');
+    if (targetRangeStart >= Number(rangeStart) && Number(rangeStart) > relevantDeclarationRangeStart) {
+      relevantDeclarationRangeStart = Number(rangeStart);
+    }
+  })
+  return `${name} ${relevantDeclarationRangeStart}`;
+}
+
 const getVariableId = (varName: string, node: ASTNode) => (`${varName} ${node.range ? node.range[0] : ''}`);
 
 export const getAddresses = async (contractInfo: Contract) => {
@@ -240,7 +259,17 @@ export const getAddresses = async (contractInfo: Contract) => {
         return;
       }
       if (memberAccessFunctionCallArgument.type === 'Identifier') {
-        const addressToCall = discoveredStateVars[memberAccessFunctionCallArgument.name] || discoveredVariables[memberAccessFunctionCallArgument.name] || undefined;
+        const matchingName = (
+         findMatchingId(discoveredStateVars, memberAccessFunctionCallArgument.name, memberAccessFunctionCallArgument.range) ||
+         findMatchingId(discoveredVariables, memberAccessFunctionCallArgument.name, memberAccessFunctionCallArgument.range) ||
+         undefined
+        );
+        if (!matchingName) {
+          return
+        }
+        const addressToCall = discoveredStateVars[matchingName] || discoveredVariables[matchingName] || undefined;
+        console.log(discoveredStateVars, discoveredVariables)
+        console.log('addressToCall', addressToCall)
         if (!addressToCall) {
           return
         }
