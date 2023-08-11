@@ -4,7 +4,6 @@ import { useRouter } from 'next/router'
 import { Select, Input, Button, Space } from 'antd'
 import { firstLetterUppercase } from '~/helpers'
 import type { SupportedChain } from '~/types'
-import styles from './index.module.css'
 import { chainConfigs } from '~/helpers'
 
 export default function Home() {
@@ -41,7 +40,7 @@ export default function Home() {
                     label: firstLetterUppercase(chain),
                     value: chain,
                   }))}
-                  className={styles.chainSelect}
+                  className="chainSelect"
                 />
               }
             />

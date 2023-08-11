@@ -54,7 +54,9 @@ const ContractMenuReferenceItem = ({
 // onClickIcon
 // onAttest
 // onRevoke
-const AttestationMenuItem = () => {}
+const AttestationMenuItem = ({}: {}) => {}
+
+const demoAttestations = []
 
 export default function Address() {
   const { chain, address } = useDynamicRouteParams()

@@ -4,9 +4,10 @@ import { Button } from 'antd'
 import { useAccount } from 'wagmi'
 import { useRouter } from 'next/router'
 import { AiOutlineUser } from 'react-icons/ai'
+import { ReactNode } from 'react'
 
 type HeaderProps = {
-  pageDescription?: string
+  pageDescription?: ReactNode
 }
 
 const Header = ({ pageDescription = 'Know your contracts' }: HeaderProps) => {
@@ -19,7 +20,7 @@ const Header = ({ pageDescription = 'Know your contracts' }: HeaderProps) => {
         <Link href="/" className="font-bold text-primary text-lg">
           Sidescan
         </Link>
-        <span className="text-gray-500 text-base">{pageDescription}</span>
+        <div className="text-gray-500 text-base">{pageDescription}</div>
       </div>
       <div className="flex gap-2">
         {isConnected && (
