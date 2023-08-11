@@ -4,8 +4,10 @@ import { ASTNode, BaseASTNode, VariableDeclaration } from '@solidity-parser/pars
 import { AddressInfo } from '~/types'
 import loadContractLibraries from './loadContractLibraries';
 import getPrisma from './getPrisma';
-import {utils} from 'ethers'
+import {Contract as EthersContract, utils, providers} from 'ethers'
 import { FormatTypes } from 'ethers/lib/utils';
+import getAbiIfReturnsAddress from './getAbiIfReturnsAddress';
+import getProvider from './getProvider';
 
 const isAddress = (val: string) => {
   return val.length === 42 && val.startsWith('0x')
@@ -216,6 +218,126 @@ export const getAddresses = async (contractInfo: Contract) => {
     const relevantFunctionNames = relevantFunctions.map((element) => element.split(' ')[1].split('(')[0]);
     monitoredFunctions[libraryName] = relevantFunctionNames;
   }
-  console.log(monitoredFunctions);
-  return addresses;
+  visit(ast, {
+    MemberAccess(node, parent) {
+      const memberAccessExpression = node.expression;
+      if (!parent || parent.type !== 'FunctionCall') {
+        return;
+      }
+      if (memberAccessExpression.type !== 'FunctionCall') {
+        return;
+      }
+      const memberAccessFunctionCallExpression = memberAccessExpression.expression;
+      if (memberAccessFunctionCallExpression.type !== 'Identifier') {
+        return;
+      }
+      const memberAccessFunctionCallArguments = memberAccessExpression.arguments;
+      if (memberAccessFunctionCallArguments.length !== 1) {
+        return;
+      }
+      const memberAccessFunctionCallArgument = memberAccessFunctionCallArguments[0];
+      if (memberAccessFunctionCallArgument.type !== 'NumberLiteral' && memberAccessFunctionCallArgument.type !== 'Identifier') {
+        return;
+      }
+      if (memberAccessFunctionCallArgument.type === 'Identifier') {
+        const addressToCall = discoveredStateVars[memberAccessFunctionCallArgument.name] || discoveredVariables[memberAccessFunctionCallArgument.name] || undefined;
+        if (!addressToCall) {
+          return
+        }
+        const functionToCall = node.memberName;
+        const argsToUse = parent.arguments.map((arg) => {
+          if (arg.type === 'NumberLiteral') {
+            return arg.number;
+          }
+          if (arg.type === 'StringLiteral') {
+            return arg.value;
+          }
+          if (arg.type === 'Identifier') {
+            const val = discoveredStateVars[arg.name] || discoveredVariables[arg.name] || undefined;
+            if (!val) {
+              return null;
+            }
+            return val;
+          }
+        })
+        if (argsToUse.includes(null)) {
+          return;
+        };
+        addresses.push(
+          {
+            ...getFlatLocationInfo(node),
+            contractPath,
+            contractName,
+            address: '',
+            source: "public_function",
+            parent,
+            getAddress: async () => {
+              const abi = await getAbiIfReturnsAddress(addressToCall, chain, functionToCall);
+              if (!abi) {
+                throw new Error(`Could not find ABI for ${addressToCall} on ${chain}`);
+              }
+              const provider = getProvider(chain);
+              const contract = new EthersContract(addressToCall, abi, provider);
+              return await contract[functionToCall](...argsToUse)
+            },
+          }
+        )
+      }
+      else if (memberAccessFunctionCallArgument.type === 'NumberLiteral') {
+        const addressToCall = memberAccessFunctionCallArgument.number;
+        const functionToCall = node.memberName;
+        const argsToUse = parent.arguments.map((arg) => {
+          if (arg.type === 'NumberLiteral') {
+            return arg.number;
+          }
+          if (arg.type === 'StringLiteral') {
+            return arg.value;
+          }
+          if (arg.type === 'Identifier') {
+            const val = discoveredStateVars[arg.name] || discoveredVariables[arg.name] || undefined;
+            if (!val) {
+              return null;
+            }
+            return val;
+          }
+        })
+        if (argsToUse.includes(null)) {
+          return;
+        };
+        addresses.push(
+          {
+            ...getFlatLocationInfo(node),
+            contractPath,
+            contractName,
+            address: '',
+            source: "public_function",
+            parent,
+            getAddress: async () => {
+              const abi = await getAbiIfReturnsAddress(addressToCall, chain, functionToCall);
+              if (!abi) {
+                throw new Error(`Could not find ABI for ${addressToCall} on ${chain}`);
+              }
+              const provider = getProvider(chain);
+              const contract = new EthersContract(addressToCall, abi, provider);
+              return await contract[functionToCall](...argsToUse)
+            }
+          }
+        )
+      }
+    },
+  })
+  const resolvedAddressIdx: number[] = [];
+  await Promise.all(addresses.map(async (address, i) => {
+    if (!address.getAddress) {
+      resolvedAddressIdx.push(i);
+      return
+    }
+    try {
+      address.address = await address.getAddress();
+      resolvedAddressIdx.push(i);
+    } catch (e) {
+      return
+    }
+  }))
+  return addresses.filter((_, i) => resolvedAddressIdx.includes(i));
 }
