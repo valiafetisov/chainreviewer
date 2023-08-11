@@ -2,6 +2,7 @@ import { Contract } from '@prisma/client';
 import { parse, visit } from '@solidity-parser/parser'
 import { ASTNode, BaseASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
 import { AddressInfo } from '~/types'
+import loadContractLibraries from './loadContractLibraries';
 
 const isAddress = (val: string) => {
   return val.length === 42 && val.startsWith('0x')
@@ -30,8 +31,8 @@ function getFlatLocationInfo(node: ASTNode | BaseASTNode) {
 
 const getVariableId = (varName: string, node: ASTNode) => (`${varName} ${node.range ? node.range[0] : ''}`);
 
-export const getAddresses = (contractInfo: Contract) => {
-  const { contractName, contractPath, sourceCode, address } = contractInfo;
+export const getAddresses = async (contractInfo: Contract) => {
+  const { contractName, contractPath, sourceCode, address, chain } = contractInfo;
   const ast = getAst(sourceCode);
   const addresses: AddressInfo[] = [];
   // Number literals are added twice, so we skip every second one
@@ -191,5 +192,6 @@ export const getAddresses = (contractInfo: Contract) => {
       )
     }
   })
+  await loadContractLibraries(address, chain);
   return addresses;
 }
