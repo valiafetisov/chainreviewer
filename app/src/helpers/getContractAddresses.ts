@@ -3,6 +3,9 @@ import { parse, visit } from '@solidity-parser/parser'
 import { ASTNode, BaseASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
 import { AddressInfo } from '~/types'
 import loadContractLibraries from './loadContractLibraries';
+import getPrisma from './getPrisma';
+import {utils} from 'ethers'
+import { FormatTypes } from 'ethers/lib/utils';
 
 const isAddress = (val: string) => {
   return val.length === 42 && val.startsWith('0x')
@@ -192,6 +195,27 @@ export const getAddresses = async (contractInfo: Contract) => {
       )
     }
   })
-  await loadContractLibraries(address, chain);
+  const loadedLibraries = await loadContractLibraries(address, chain);
+  const monitoredFunctions: Record<string, string[]> = {};
+  for (const [libraryName, libraryAddress] of Object.entries(loadedLibraries)) {
+    const abi = (await getPrisma().contract.findFirst({
+      where: {
+        address: libraryAddress,
+        chain,
+      }
+    }))?.abi;
+    if ( !abi ) {
+      continue;
+    }
+    const iface = new utils.Interface(abi);
+    const ifaceElements = iface.format(FormatTypes.full);
+    if (!(ifaceElements instanceof Array)) {
+      continue;
+    }
+    const relevantFunctions = ifaceElements.filter((element) => element.startsWith('function') && element.includes('returns (address)'));
+    const relevantFunctionNames = relevantFunctions.map((element) => element.split(' ')[1].split('(')[0]);
+    monitoredFunctions[libraryName] = relevantFunctionNames;
+  }
+  console.log(monitoredFunctions);
   return addresses;
 }
