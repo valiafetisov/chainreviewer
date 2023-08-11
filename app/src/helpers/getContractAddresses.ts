@@ -449,7 +449,7 @@ export const getAddresses = async (contractInfo: Contract) => {
       address.address = await address.getAddress();
       resolvedAddressIdx.push(i);
     } catch (e) {
-      console.log(e)
+      console.error(e)
       return
     }
   }))
