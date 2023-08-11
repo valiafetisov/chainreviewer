@@ -45,7 +45,7 @@ const ContractMenuReferenceItem = ({
   </Link>
 )
 
-// TODO: add AttestationMenuItem props
+// TODO: mock attestation UI will be implemented from next frontend PR @DaeunYoon
 // isMine
 // isMyFollowers
 // address
@@ -55,7 +55,6 @@ const ContractMenuReferenceItem = ({
 // onAttest
 // onRevoke
 const AttestationMenuItem = ({}: {}) => {}
-
 const demoAttestations = []
 
 export default function Address() {
