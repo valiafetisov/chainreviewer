@@ -243,6 +243,72 @@ export const getAddresses = async (contractInfo: Contract) => {
       if (!parent || parent.type !== 'FunctionCall') {
         return;
       }
+      // if something like `libraryName.functionName()`
+      if (memberAccessExpression.type === 'Identifier') {
+        if (!Object.keys(loadedLibraries).includes(memberAccessExpression.name)) {
+          return;
+        }
+        if (!Object.keys(monitoredFunctions).includes(memberAccessExpression.name)) {
+          return;
+        }
+        if (!monitoredFunctions[memberAccessExpression.name].includes(node.memberName)) {
+          return
+        }
+        const calledFunction = node.memberName;
+        const libraryAddress = loadedLibraries[memberAccessExpression.name];
+        const argsToUse = parent.arguments.map((arg) => {
+          if (arg.type === 'NumberLiteral') {
+            return arg.number;
+          }
+          if (arg.type === 'StringLiteral') {
+            return arg.value;
+          }
+          if (arg.type === 'Identifier') {
+            const matchingVal = (
+             findMatchingId(discoveredStateVars, arg.name, arg.range) ||
+             findMatchingId(discoveredVariables, arg.name, arg.range) ||
+             undefined
+            );
+            if (!matchingVal) {
+              return
+            }
+            const val = discoveredStateVars[matchingVal] || discoveredVariables[matchingVal] || undefined;
+            if (!val) {
+              return null;
+            }
+            return val;
+          }
+        })
+        if (argsToUse.includes(null)) {
+          return;
+        };
+        addresses.push(
+          {
+            ...getFlatLocationInfo(node),
+            contractPath,
+            contractName,
+            address: '',
+            source: "public_function",
+            parent,
+            getAddress: async () => {
+              const abi = await getAbiIfReturnsAddress(libraryAddress, chain, calledFunction);
+              if (!abi) {
+                throw new Error(`Could not find ABI for ${libraryAddress} on ${chain}`);
+              }
+              const provider = getProvider(chain);
+              const contract = new EthersContract(libraryAddress, abi, provider);
+              const formattedArgs = (argsToUse as string[]).map((arg) => {
+                if (utils.isAddress(arg)) {
+                  return arg;
+                }
+                return utils.formatBytes32String(arg);
+              })
+              return await contract[calledFunction](...formattedArgs)
+            },
+          }
+        )
+      }
+      // if something like `interface(0x123).functionName(0x1234)`
       if (memberAccessExpression.type !== 'FunctionCall') {
         return;
       }
@@ -280,7 +346,15 @@ export const getAddresses = async (contractInfo: Contract) => {
             return arg.value;
           }
           if (arg.type === 'Identifier') {
-            const val = discoveredStateVars[arg.name] || discoveredVariables[arg.name] || undefined;
+            const matchingVal = (
+             findMatchingId(discoveredStateVars, arg.name, arg.range) ||
+             findMatchingId(discoveredVariables, arg.name, arg.range) ||
+             undefined
+            );
+            if (!matchingVal) {
+              return
+            }
+            const val = discoveredStateVars[matchingVal] || discoveredVariables[matchingVal] || undefined;
             if (!val) {
               return null;
             }
@@ -305,7 +379,13 @@ export const getAddresses = async (contractInfo: Contract) => {
               }
               const provider = getProvider(chain);
               const contract = new EthersContract(addressToCall, abi, provider);
-              return await contract[functionToCall](...argsToUse)
+              const formattedArgs = (argsToUse as string[]).map((arg) => {
+                if (utils.isAddress(arg)) {
+                  return arg;
+                }
+                return utils.formatBytes32String(arg);
+              })
+              return await contract[functionToCall](...formattedArgs)
             },
           }
         )
@@ -328,7 +408,7 @@ export const getAddresses = async (contractInfo: Contract) => {
             return val;
           }
         })
-        if (argsToUse.includes(null)) {
+        if (argsToUse.includes(null) || argsToUse.includes(undefined)) {
           return;
         };
         addresses.push(
@@ -346,7 +426,13 @@ export const getAddresses = async (contractInfo: Contract) => {
               }
               const provider = getProvider(chain);
               const contract = new EthersContract(addressToCall, abi, provider);
-              return await contract[functionToCall](...argsToUse)
+              const formattedArgs = (argsToUse as string[]).map((arg) => {
+                if (utils.isAddress(arg)) {
+                  return arg;
+                }
+                return utils.formatBytes32String(arg);
+              })
+              return await contract[functionToCall](...formattedArgs)
             }
           }
         )
@@ -363,6 +449,7 @@ export const getAddresses = async (contractInfo: Contract) => {
       address.address = await address.getAddress();
       resolvedAddressIdx.push(i);
     } catch (e) {
+      console.log(e)
       return
     }
   }))
