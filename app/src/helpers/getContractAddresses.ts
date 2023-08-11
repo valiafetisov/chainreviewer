@@ -268,8 +268,6 @@ export const getAddresses = async (contractInfo: Contract) => {
           return
         }
         const addressToCall = discoveredStateVars[matchingName] || discoveredVariables[matchingName] || undefined;
-        console.log(discoveredStateVars, discoveredVariables)
-        console.log('addressToCall', addressToCall)
         if (!addressToCall) {
           return
         }
