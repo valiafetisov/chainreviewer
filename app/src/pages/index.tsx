@@ -1,10 +1,9 @@
 import { useState, SyntheticEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Select, Input, Button } from 'antd'
+import { Select, Input, Button, Space } from 'antd'
 import { firstLetterUppercase } from '~/helpers'
 import type { SupportedChain } from '~/types'
-import styles from './index.module.css'
 import { chainConfigs } from '~/helpers'
 
 export default function Home() {
@@ -27,39 +26,41 @@ export default function Home() {
         className="flex justify-center w-full max-w-2xl"
       >
         <div className="flex w-full max-w-2xl">
-          <Button.Group className="w-full">
-            <Select
-              value={chain}
-              onChange={setChain}
-              options={Object.keys(chainConfigs).map((chain) => ({
-                label: firstLetterUppercase(chain),
-                value: chain,
-              }))}
-              className={styles.chainSelect}
-            />
+          <Space.Compact className="w-full">
             <Input
               value={address}
               placeholder="Contract Address 0x..."
               onChange={(val) => setAddress(val.target.value)}
               style={{ borderRadius: '0px' }}
+              addonBefore={
+                <Select
+                  value={chain}
+                  onChange={setChain}
+                  options={Object.keys(chainConfigs).map((chain) => ({
+                    label: firstLetterUppercase(chain),
+                    value: chain,
+                  }))}
+                  className="chainSelect"
+                />
+              }
             />
             <Button className="bg-primary" type="primary" htmlType="submit">
               View Source Code
             </Button>
-          </Button.Group>
+          </Space.Compact>
         </div>
       </form>
       <p className="text-gray-500">
         Or try example contracts:{' '}
         <Link
           className="text-primary underline"
-          href="/contract/mainnet/0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+          href="/contract/ethereum/0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
         >
           MakerDAOvat.sol
         </Link>{' '}
         <Link
           className="text-primary underline"
-          href="/contract/mainnet/0xE592427A0AEce92De3Edee1F18E0157C05861564"
+          href="/contract/ethereum/0xE592427A0AEce92De3Edee1F18E0157C05861564"
         >
           UniswapV3Router.sol
         </Link>
