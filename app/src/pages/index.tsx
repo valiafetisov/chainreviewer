@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-7 flex-1">
-      <h1 className="text-4xl font-bold">SideScan</h1>
+      <h1 className="text-4xl font-bold">Chain Reviewer</h1>
       <form
         onSubmit={searchContract}
         className="flex justify-center w-full max-w-2xl"

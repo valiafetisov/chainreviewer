@@ -1,12 +1,12 @@
 import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types'
 
 export type SupportedChain =
+  | 'optimism'
+  | 'optimism-goerli'
   | 'mode'
   | 'ethereum'
   | 'goerli-ethereum'
   | 'sepolia-ethereum'
-  | 'optimism'
-  | 'optimism-goerli'
 
 export declare interface AddressInfo {
   contractPath: string

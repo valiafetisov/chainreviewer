@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 export const metadata: Metadata = {
-  title: 'sidescan',
+  title: 'Chain Reviewer',
 }
 
 type HeaderDescriptionProps = {
@@ -52,7 +52,7 @@ const HeaderDescription = ({
     return <>{address}</>
   }
 
-  return <>Know your contracts</>
+  return <>Know Your Contracts</>
 }
 
 export default function RootLayout({
