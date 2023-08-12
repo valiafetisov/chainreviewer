@@ -36,3 +36,5 @@ export const firstLetterUppercase = (str: string) =>
 
 export const shortendAddress = (address: string) =>
   `${address.slice(0, 4)}...${address.slice(-4)}`
+
+export const timeFormatString = 'MM/DD/YYYY h:mm:ss a'
