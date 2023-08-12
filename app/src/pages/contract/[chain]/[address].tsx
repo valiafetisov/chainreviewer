@@ -1,18 +1,29 @@
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { chainConfigs } from '~/helpers'
 import { isAddress } from 'viem'
-import { shortendAddress } from '~/helpers'
+import { shortendAddress, walletClientToProvider } from '~/helpers'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
-import type { AddressInfo } from '~/types'
+import type { AddressInfo, SupportedChain, ResolvedAttestation } from '~/types'
 import AttestationListItem, {
   AttestationMenuItemProps,
 } from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
+import { EAS, SchemaEncoder } from '@ethereum-attestation-service/eas-sdk'
+import {
+  CODE_AUDIT_SCHEMA,
+  EASContractAddress,
+  getAttestationsByContractAddress,
+} from '~/utils'
+import { useWalletClient } from 'wagmi'
+import { optimismGoerli } from 'wagmi/chains'
+import { Web3Provider } from '@ethersproject/providers'
+import { ethers } from 'ethers'
+import objecthash from 'object-hash'
 
 // TODO: remove this mock data when there is proper data fetched @DaeunYoon
 // menu props doesn't need to be in type
@@ -97,7 +108,7 @@ const ContractMenuReferenceItem = ({
   source: string
   address: string
   contractPath: string
-  chain: string
+  chain: SupportedChain
 }) => (
   <Link
     href={`/contract/${chain}/${address}`}
@@ -112,13 +123,53 @@ const ContractMenuReferenceItem = ({
   </Link>
 )
 
+// const attestContract = async function ({
+//   constractAddress,
+//   hash,
+//   chain,
+// }: {
+//   constractAddress: string
+//   hash: string
+//   chain: string
+// }) {
+//   const schemaEncoder = new SchemaEncoder(
+//     'address contractAddress,string hash,string chain'
+//   )
+
+//   const encoded = schemaEncoder.encodeData([
+//     { name: 'contractAddress', type: 'address', value: constractAddress },
+//     { name: 'hash', type: 'string', value: hash },
+//     { name: 'chain', type: 'string', value: chain },
+//   ])
+
+//   // @ts-expect-error This should work but type doesn't match.
+//   // TODO: use the correct type
+//   eas.connect(convertedSigner)
+
+//   const tx = await eas.attest({
+//     data: {
+//       recipient: constractAddress,
+//       data: encoded,
+//       refUID: ethers.constants.HashZero,
+//       revocable: true,
+//       expirationTime: undefined,
+//     },
+//     schema: CODE_AUDIT_SCHEMA,
+//   })
+
+//   await tx.wait()
+// }
+
+const eas = new EAS(EASContractAddress)
+
 export default function Address() {
   const { chain, address } = useDynamicRouteParams()
-  const chainConfig = chainConfigs[chain as string]
-  const isAddressValid = useMemo(
-    () => (typeof address === 'string' ? isAddress(address) : false),
-    [address]
-  )
+  const { data: walletClient, isLoading: isLoadingWalletClient } =
+    useWalletClient({
+      chainId: optimismGoerli.id,
+    })
+  const chainConfig = chainConfigs[chain as SupportedChain]
+
   const [constracts, setContracts] = useState<Contract[]>([])
   const [isLoadingContracts, setIsLoadingContracs] = useState(false)
   const [contractSearch, setContractSearch] = useState('')
@@ -128,6 +179,22 @@ export default function Address() {
   const [isLoadingAddressInfos, setIsLoadingAddressInfos] = useState(false)
   const [addressInfosSearch, setAddressInfosSearch] = useState('')
   const [isAttestationInfosOpen, setIsAttestationInfosOpen] = useState(false)
+  const [convertedSigner, setConvertedSigner] = useState<Web3Provider>()
+  const [isLoadingAttestations, setIsLoadingAttestations] = useState(false)
+  const [attestations, setAttestations] = useState<ResolvedAttestation[]>([])
+  const [attesting, setAttesting] = useState(false)
+  const [isStale, setIsStale] = useState(false)
+
+  const constractHash = ''
+  // const constractHash = useMemo(() => {
+  //   if (!constracts.length) return ''
+  //   return objecthash(constracts[0].abi)
+  // }, [constracts])
+
+  const isAddressValid = useMemo(
+    () => (typeof address === 'string' ? isAddress(address) : false),
+    [address]
+  )
 
   const searchedContracts = useMemo(
     () =>
@@ -164,6 +231,42 @@ export default function Address() {
     [addressInfos, addressInfosSearch]
   )
 
+  async function getAtts() {
+    if (!address) {
+      return
+    }
+
+    setAttestations([])
+    setIsLoadingAttestations(true)
+    const tmpAttestations = await getAttestationsByContractAddress(
+      address as string
+    )
+    const schemaEncoder = new SchemaEncoder('string skill,uint8 score')
+
+    const addresses = new Set<string>()
+
+    tmpAttestations.forEach((att) => {
+      addresses.add(att.recipient)
+    })
+
+    let resolvedAttestations: ResolvedAttestation[] = []
+
+    tmpAttestations.forEach((att) => {
+      resolvedAttestations.push({
+        ...att,
+        decodedData: schemaEncoder
+          .decodeData(att.data)
+          .reduce((acc, decoded) => {
+            acc[decoded.name] = decoded.value.value
+            return acc
+          }, {} as Record<string, any>),
+      })
+    })
+
+    setAttestations(resolvedAttestations)
+    setIsLoadingAttestations(false)
+  }
+
   useEffect(() => {
     if (address && chainConfig && isAddressValid) {
       setIsLoadingContracs(true)
@@ -191,6 +294,17 @@ export default function Address() {
         })
     }
   }, [constracts])
+
+  // useEffect(() => {
+  //   if (constractHash.length) {
+  //     getAtts()
+  //   }
+  // }, [constracts])
+
+  // useEffect(() => {
+  //   const signer = walletClientToProvider(walletClient ?? undefined)
+  //   setConvertedSigner(signer)
+  // }, [isLoadingWalletClient, walletClient])
 
   if (!address || !chainConfig || !isAddressValid) {
     return (
@@ -223,7 +337,11 @@ export default function Address() {
                   title={contract.contractPath}
                 />
                 <div className="-mt-[2px]">
-                  <Highlight code={contract.sourceCode} references={addressInfos[contract.contractPath]} chain={chain} />
+                  <Highlight
+                    code={contract.sourceCode}
+                    references={addressInfos[contract.contractPath]}
+                    chain={chain as SupportedChain}
+                  />
                 </div>
               </div>
             ))}
@@ -268,7 +386,21 @@ export default function Address() {
                   userType={attestation.userType}
                   attestation={attestation.attestation}
                   onClickIcon={() => {}}
-                  onAttest={() => {}}
+                  onAttest={() => {
+                    try {
+                      setAttesting(true)
+                      // attestContract({
+                      //   constractAddress: address as string,
+                      //   chain: chain as string,
+                      //   hash: constractHash,
+                      // })
+                      setIsStale(true)
+                    } catch (e) {
+                      console.log(e)
+                    } finally {
+                      setAttesting(false)
+                    }
+                  }}
                   onRevoke={() => {}}
                 />
               ))
@@ -308,6 +440,15 @@ export default function Address() {
                 />
               ))}
           </div>
+          <div>
+            {attestations.length &&
+              attestations.map((attestation) => (
+                <div>
+                  <div>{attestation.attester}</div>
+                  <div>{attestation.id}</div>
+                </div>
+              ))}
+          </div>
 
           <div className="bg-white">
             <div className="bg-white flex flex-col gap-1">
@@ -325,7 +466,7 @@ export default function Address() {
                 arr.map((addressInfo, idx) => (
                   <ContractMenuReferenceItem
                     key={idx}
-                    chain={chain as string}
+                    chain={chain as SupportedChain}
                     source={addressInfo.source}
                     address={addressInfo.address}
                     contractPath={addressInfo.contractPath}

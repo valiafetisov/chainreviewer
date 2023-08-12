@@ -1,4 +1,6 @@
 import type { SupportedChain } from '~/types'
+import { type WalletClient } from 'wagmi'
+import { providers } from 'ethers'
 
 export const chainConfigs: Readonly<
   Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
@@ -53,3 +55,15 @@ export const shortendAddress = (address: string) =>
   `${address.slice(0, 4)}...${address.slice(-4)}`
 
 export const timeFormatString = 'MM/DD/YYYY h:mm:ss a'
+
+export function walletClientToProvider(walletClient?: WalletClient) {
+  if (!walletClient) return
+  const { chain, transport } = walletClient
+  const network = {
+    chainId: chain.id,
+    name: chain.name,
+    ensAddress: chain.contracts?.ensRegistry?.address,
+  }
+  const provider = new providers.Web3Provider(transport, network)
+  return provider
+}

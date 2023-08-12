@@ -75,3 +75,11 @@ export interface Attestation {
 export type ResolvedAttestation = Attestation & {
   decodedData?: Record<string, any>
 }
+
+// To remove "Property 'ethereum' does not exist on type 'Window & typeof globalThis'." error
+// https://ethereum.stackexchange.com/questions/135989/property-ethereum-does-not-exist-on-type-window-typeof-globalthis-in-next
+declare global {
+  interface Window {
+    ethereum: any
+  }
+}
