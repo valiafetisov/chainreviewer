@@ -220,7 +220,18 @@ export default function Address() {
       </div>
     )
   }
-  console.log('contracts', contracts)
+
+  if (contracts?.[0]?.abi === 'Contract source code not verified' || !contracts?.[0]?.sourceCode) {
+    return (
+      <div>
+        <p>
+          Contract source code is not verified
+        </p>
+      </div>
+    )
+  }
+
+
   return (
     <div className="flex gap-3">
       <div className="flex-1 max-w-[calc(100%-21rem)] h-full">
