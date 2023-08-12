@@ -29,3 +29,69 @@ export declare interface AddressInfo {
     | 'state'
   parent: ASTNode | undefined
 }
+
+/** Attestation */
+export type EASChainConfig = {
+  chainId: number
+  chainName: string
+  version: string
+  contractAddress: string
+  schemaRegistryAddress: string
+  etherscanURL: string
+  /** Must contain a trailing dot (unless mainnet). */
+  subdomain: string
+  contractStartBlock: number
+  rpcProvider: string
+}
+
+export interface AttestationResult {
+  data: Data
+}
+
+export interface MyAttestationResult {
+  data: MyData
+}
+
+export interface Data {
+  attestation: Attestation | null
+}
+
+export interface MyData {
+  attestations: Attestation[]
+}
+
+export interface Attestation {
+  id: string
+  attester: string
+  recipient: string
+  refUID: string
+  revocationTime: number
+  expirationTime: number
+  time: number
+  txid: string
+  data: string
+}
+
+export type ResolvedAttestation = Attestation & {
+  decodedData?: Record<string, any>
+}
+
+export interface ContractAttestation {
+  id: string
+  userType: 'me' | 'following' | 'stranger'
+  userName?: string
+  attestation: {
+    attestationType?: 'attested' | 'revoked'
+    attester: string
+    attestedAt?: Date
+    revokedAt?: Date
+  }
+}
+
+// To remove "Property 'ethereum' does not exist on type 'Window & typeof globalThis'." error
+// https://ethereum.stackexchange.com/questions/135989/property-ethereum-does-not-exist-on-type-window-typeof-globalthis-in-next
+declare global {
+  interface Window {
+    ethereum: any
+  }
+}

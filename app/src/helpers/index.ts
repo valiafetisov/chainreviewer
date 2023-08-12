@@ -1,41 +1,53 @@
 import type { SupportedChain } from '~/types'
+import { format } from 'date-fns'
 
 export const chainConfigs: Readonly<
-  Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
+  Record<
+    SupportedChain,
+    {
+      endpoint: string
+      apiKey: string | undefined
+      name: string
+      chainId: number
+    }
+  >
 > = {
   mode: {
+    chainId: 919,
+    name: 'Mode',
     endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
     apiKey: undefined,
   },
   ethereum: {
+    chainId: 1,
+    name: 'Ethereum',
     endpoint: 'https://api.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   'goerli-ethereum': {
+    chainId: 5,
+    name: 'Ethereum(Goerli)',
     endpoint: 'https://api-goerli.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   'sepolia-ethereum': {
+    chainId: 11155111,
+    name: 'Ethereum(Sepolia)',
     endpoint: 'https://api-sepolia.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
   optimism: {
+    chainId: 10,
+    name: 'Optimism',
     endpoint: 'https://api-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
   'optimism-goerli': {
+    chainId: 420,
+    name: 'Optimism(Goerli)',
     endpoint: 'https://api-goerli-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
-}
-
-export const getChainLabel: Record<SupportedChain, string> = {
-  mode: 'Mode',
-  optimism: 'Optimism',
-  'optimism-goerli': 'Optimism(Goerli)',
-  ethereum: 'Ethereum',
-  'goerli-ethereum': 'Ethereum(Goerli)',
-  'sepolia-ethereum': 'Ethereum(Sepolia)',
 }
 
 export const getChainConfigs = (chain: SupportedChain) => {
@@ -51,3 +63,8 @@ export const firstLetterUppercase = (str: string) =>
 
 export const shortendAddress = (address: string) =>
   `${address.slice(0, 4)}...${address.slice(-4)}`
+
+export const timeFormatString = 'MM/dd/yyyy h:mm:ss a'
+
+export const formatDate = (date?: Date) =>
+  date ? format(date, timeFormatString) : ''

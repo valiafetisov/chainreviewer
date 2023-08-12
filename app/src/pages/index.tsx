@@ -2,13 +2,12 @@ import { useState, SyntheticEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Select, Input, Button, Space } from 'antd'
-import { getChainLabel } from '~/helpers'
 import type { SupportedChain } from '~/types'
 import { chainConfigs } from '~/helpers'
 
 export default function Home() {
   const [chain, setChain] = useState<SupportedChain>(
-    Object.keys(chainConfigs)[0]
+    Object.keys(chainConfigs)[0] as SupportedChain
   )
   const [address, setAddress] = useState('')
   const router = useRouter()
@@ -34,13 +33,15 @@ export default function Home() {
               style={{ borderRadius: '0px' }}
               addonBefore={
                 <Select
-                  title={getChainLabel[chain]}
+                  title={chainConfigs[chain].name}
                   value={chain}
                   onChange={setChain}
-                  options={Object.keys(chainConfigs).map((chain) => ({
-                    label: getChainLabel[chain],
-                    value: chain,
-                  }))}
+                  options={Object.entries(chainConfigs).map(
+                    ([chain, chainConfig]) => ({
+                      label: chainConfig.name,
+                      value: chain,
+                    })
+                  )}
                   popupMatchSelectWidth={false}
                 />
               }

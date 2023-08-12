@@ -8,74 +8,35 @@ import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
-import type { AddressInfo } from '~/types'
-import AttestationListItem, {
-  AttestationMenuItemProps,
-} from '~/components/Attestation/ListItem'
+import type {
+  AddressInfo,
+  SupportedChain,
+  ContractAttestation,
+  Attestation,
+} from '~/types'
+import AttestationListItem from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
+import { EAS } from '@ethereum-attestation-service/eas-sdk'
+import {
+  CODE_AUDIT_SCHEMA,
+  EASContractAddress,
+  getAttestationsByContractAddress,
+  contractSchemaEncoder,
+} from '~/utils'
+import { ethers } from 'ethers'
+import { toChecksumAddress } from 'web3-utils'
+import { useAccount } from 'wagmi'
+import { fromUnixTime } from 'date-fns'
+import { useRouter } from 'next/router'
 
-// TODO: remove this mock data when there is proper data fetched @DaeunYoon
-// menu props doesn't need to be in type
-// the data type is subject of change
-const demoAttestationKnownUsers: AttestationMenuItemProps[] = [
-  {
-    userType: 'me',
-    attestation: {
-      attestationType: undefined,
-      attester: '0xdC233b5368d39FED2EB99EE4dc225882D35ff4B6',
-      attestedAt: undefined,
-    },
-    onClickIcon: () => {},
-    onAttest: () => {},
-    onRevoke: () => {},
-  },
-  {
-    userType: 'following',
-    attestation: {
-      attestationType: 'attested',
-      attester: '0xdD123b5368d39FED2EB99EE4dc225882D35ff4D4',
-      attestedAt: new Date(),
-    },
-    onClickIcon: () => {},
-    onAttest: () => {},
-    onRevoke: () => {},
-  },
-]
-const demoAttestationStrangers: AttestationMenuItemProps[] = [
-  {
-    userType: 'stranger',
-    attestation: {
-      attestationType: 'attested',
-      attester: '0xdB513b5368d39FED2EB99EE4dc225882D35ff4VE',
-      attestedAt: new Date(),
-    },
-    onClickIcon: () => {},
-    onAttest: () => {},
-    onRevoke: () => {},
-  },
-  {
-    userType: 'stranger',
-    attestation: {
-      attestationType: 'attested',
-      attester: '0xdB513b5368d39FED2EB99EE4dc225882D35ff4VE',
-      attestedAt: new Date(),
-    },
-    onClickIcon: () => {},
-    onAttest: () => {},
-    onRevoke: () => {},
-  },
-  {
-    userType: 'stranger',
-    attestation: {
-      attestationType: 'attested',
-      attester: '0xdB513b5368d39FED2EB99EE4dc225882D35ff4VE',
-      attestedAt: new Date(),
-    },
-    onClickIcon: () => {},
-    onAttest: () => {},
-    onRevoke: () => {},
-  },
-]
+const digestMessage = async function (message: string) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  return hashHex
+}
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
@@ -97,7 +58,7 @@ const ContractMenuReferenceItem = ({
   source: string
   address: string
   contractPath: string
-  chain: string
+  chain: SupportedChain
 }) => (
   <Link
     href={`/contract/${chain}/${address}`}
@@ -112,14 +73,15 @@ const ContractMenuReferenceItem = ({
   </Link>
 )
 
+const eas = new EAS(EASContractAddress)
+
 export default function Address() {
   const { chain, address } = useDynamicRouteParams()
-  const chainConfig = chainConfigs[chain as string]
-  const isAddressValid = useMemo(
-    () => (typeof address === 'string' ? isAddress(address) : false),
-    [address]
-  )
-  const [constracts, setContracts] = useState<Contract[]>([])
+  const chainConfig = chainConfigs[chain as SupportedChain]
+  const { address: myAddress, isConnected } = useAccount()
+  const router = useRouter()
+
+  const [contracts, setContracts] = useState<Contract[]>([])
   const [isLoadingContracts, setIsLoadingContracs] = useState(false)
   const [contractSearch, setContractSearch] = useState('')
   const [addressInfos, setAddressInfos] = useState<
@@ -128,10 +90,31 @@ export default function Address() {
   const [isLoadingAddressInfos, setIsLoadingAddressInfos] = useState(false)
   const [addressInfosSearch, setAddressInfosSearch] = useState('')
   const [isAttestationInfosOpen, setIsAttestationInfosOpen] = useState(false)
+  const [isLoadingAttestations, setIsLoadingAttestations] = useState(false)
+  const [attestationsKnownUsers, setAttestationsKnownUsers] = useState<
+    ContractAttestation[]
+  >([])
+  const [attestationsStrangers, setAttestationsStrangers] = useState<
+    ContractAttestation[]
+  >([])
+
+  const [attesting, setAttesting] = useState(false)
+  const [isStale, setIsStale] = useState(false)
+  const [signer, setSigner] = useState<ethers.Signer | null>(null)
+
+  const contractHashPromise = useMemo(async () => {
+    if (!contracts.length) return ''
+    return await digestMessage(contracts.map(c => c.sourceCode).join())
+  }, [contracts])
+
+  const isAddressValid = useMemo(
+    () => (typeof address === 'string' ? isAddress(address) : false),
+    [address]
+  )
 
   const searchedContracts = useMemo(
     () =>
-      constracts
+      contracts
         .map((contract) => ({
           ...contract,
           lowerCasePath: contract.contractPath.toLowerCase(),
@@ -139,7 +122,7 @@ export default function Address() {
         .filter((contract) =>
           contract.lowerCasePath.includes(contractSearch.toLowerCase())
         ),
-    [constracts, contractSearch]
+    [contracts, contractSearch]
   )
 
   const searchedAddressInfos = useMemo(
@@ -164,6 +147,164 @@ export default function Address() {
     [addressInfos, addressInfosSearch]
   )
 
+  const connectWallet = async function () {
+    // Check if the ethereum object exists on the window object
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        await window.ethereum.enable()
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+
+        setSigner(provider.getSigner())
+      } catch (error) {
+        console.error('User rejected request', error)
+      }
+    } else {
+      console.error('Metamask not found')
+    }
+  }
+
+  const revokeContract = async function (uid: string) {
+    try {
+      setAttesting(true)
+      // @ts-expect-error This should work but type doesn't match.
+      // TODO: use the correct type
+      eas.connect(signer)
+
+      const tx = await eas.revoke({
+        schema: CODE_AUDIT_SCHEMA,
+        data: {
+          uid,
+        },
+      })
+
+      await tx.wait()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsStale(true)
+      setAttesting(false)
+    }
+  }
+
+  const attestContract = async function ({
+    contractAddress,
+    contractHash,
+    chainId,
+  }: {
+    contractAddress: string
+    contractHash: string
+    chainId: number
+  }) {
+    try {
+      setAttesting(true)
+
+      const encoded = contractSchemaEncoder.encodeData([
+        { name: 'chainId', type: 'uint16', value: chainId },
+        {
+          name: 'contractAddress',
+          type: 'address',
+          value: contractAddress,
+        },
+        { name: 'contractHash', type: 'string', value: contractHash },
+      ])
+
+      // @ts-expect-error This should work but type doesn't match.
+      // TODO: use the correct type
+      eas.connect(signer)
+
+      const tx = await eas.attest({
+        data: {
+          recipient: contractAddress,
+          data: encoded,
+          refUID: ethers.constants.HashZero,
+          revocable: true,
+          expirationTime: undefined,
+        },
+        schema: CODE_AUDIT_SCHEMA,
+      })
+
+      await tx.wait()
+    } catch (e) {
+      console.log(e)
+    } finally {
+      setIsStale(true)
+      setAttesting(false)
+    }
+  }
+
+  async function getAtts() {
+    if (!address) {
+      return
+    }
+
+    setAttestationsKnownUsers([])
+    setAttestationsStrangers([])
+    setIsLoadingAttestations(true)
+    const tmpAttestations = await getAttestationsByContractAddress(
+      toChecksumAddress(address as string)
+    )
+
+    const uniqueAttstations: Attestation[] = []
+    const uniqueAttestors: Set<string> = new Set()
+
+    for (const att of tmpAttestations) {
+      if (!uniqueAttestors.has(att.attester)) {
+        uniqueAttestors.add(att.attester)
+        uniqueAttstations.push(att)
+      }
+    }
+
+    let contractAttestations: ContractAttestation[] = []
+
+    uniqueAttstations.forEach((att) => {
+      const isRevoked = att.revocationTime !== 0
+      // const decodedData = contractSchemaEncoder.decodeData(att.data)
+
+      contractAttestations.push({
+        id: att.id,
+        userType: att.attester === myAddress ? 'me' : 'stranger',
+        userName: att.attester === myAddress ? 'YOU' : undefined,
+        attestation: {
+          attester: att.attester,
+          attestedAt: fromUnixTime(att.time),
+          revokedAt: isRevoked ? fromUnixTime(att.revocationTime) : undefined,
+          attestationType: isRevoked ? 'revoked' : 'attested',
+        },
+      })
+    })
+
+    if (
+      myAddress &&
+      !contractAttestations.find((att) => att.userType === 'me')
+    ) {
+      contractAttestations.push({
+        id: 'not-attested',
+        userType: 'me',
+        userName: 'YOU',
+        attestation: {
+          attester: myAddress,
+          attestedAt: undefined,
+          attestationType: undefined,
+        },
+      })
+    }
+
+    setAttestationsKnownUsers(
+      contractAttestations.filter((att) => att.userType !== 'stranger')
+    )
+    setAttestationsStrangers(
+      contractAttestations.filter((att) => att.userType === 'stranger')
+    )
+    setIsLoadingAttestations(false)
+    setIsStale(false)
+  }
+
+  useEffect(() => {
+    if (signer) return
+    connectWallet()
+  }, [])
+
   useEffect(() => {
     if (address && chainConfig && isAddressValid) {
       setIsLoadingContracs(true)
@@ -179,7 +320,7 @@ export default function Address() {
   }, [address, chain, isAddressValid, chainConfig])
 
   useEffect(() => {
-    if (constracts.length) {
+    if (contracts.length) {
       setIsLoadingAddressInfos(true)
       fetch(`/api/linking/${chain}/${address}`)
         .then((res) => res.json())
@@ -190,7 +331,17 @@ export default function Address() {
           setIsLoadingAddressInfos(false)
         })
     }
-  }, [constracts])
+  }, [contracts])
+
+  useEffect(() => {
+    getAtts()
+  }, [contracts, myAddress])
+
+  useEffect(() => {
+    if (isStale) {
+      getAtts()
+    }
+  }, [isStale])
 
   if (!address || !chainConfig || !isAddressValid) {
     return (
@@ -216,14 +367,18 @@ export default function Address() {
           </div>
         ) : (
           <div>
-            {constracts.map((contract) => (
+            {contracts.map((contract) => (
               <div key={contract.id} id={contract.contractPath}>
                 <MenuTitle
                   className="sticky top-0 z-10"
                   title={contract.contractPath}
                 />
                 <div className="-mt-[2px]">
-                  <Highlight code={contract.sourceCode} references={addressInfos[contract.contractPath]} chain={chain} />
+                  <Highlight
+                    code={contract.sourceCode}
+                    references={addressInfos[contract.contractPath]}
+                    chain={chain as SupportedChain}
+                  />
                 </div>
               </div>
             ))}
@@ -236,7 +391,7 @@ export default function Address() {
             <MenuTitleWithSearch
               title="Files"
               isLoading={isLoadingContracts}
-              total={constracts.length}
+              total={contracts.length}
               search={contractSearch}
               setSearch={setContractSearch}
             />
@@ -256,59 +411,87 @@ export default function Address() {
             <MenuTitle
               title="Attestations"
               total={
-                demoAttestationKnownUsers.length +
-                demoAttestationStrangers.length
+                attestationsKnownUsers.filter(
+                  (att) => att.attestation.attestationType === 'attested'
+                ).length + attestationsStrangers.length
               }
-              isLoading={isLoadingContracts}
+              isLoading={isLoadingContracts || isLoadingAttestations}
             />
-            {demoAttestationKnownUsers.length ? (
-              demoAttestationKnownUsers.map((attestation, idx) => (
+            {isConnected ? (
+              attestationsKnownUsers.length ? (
+                attestationsKnownUsers.map((attestation) => (
+                  <AttestationListItem
+                    key={attestation.id}
+                    id={attestation.id}
+                    userType={attestation.userType}
+                    userName={attestation.userName}
+                    attestation={attestation.attestation}
+                    isAttesting={attesting}
+                    onClickIcon={() =>
+                      router.push(`/user/${attestation.attestation.attester}`)
+                    }
+                    onAttest={async () => {
+                      attestContract({
+                        contractAddress: address as string,
+                        chainId: chainConfig.chainId,
+                        contractHash: await contractHashPromise,
+                      })
+                    }}
+                    onRevoke={() => {
+                      revokeContract(attestation.id)
+                    }}
+                  />
+                ))
+              ) : (
+                <MenuEmpty />
+              )
+            ) : (
+              <></>
+            )}
+            {isConnected && (
+              <button
+                className="bg-neutral-100 text-gray-400 w-full"
+                disabled={!attestationsStrangers.length}
+                onClick={() =>
+                  setIsAttestationInfosOpen(!isAttestationInfosOpen)
+                }
+              >
+                <div className="flex items-center py-1 px-2">
+                  {!isAttestationInfosOpen ? (
+                    <div className="flex gap-2 items-center mr-1">
+                      <AiFillCaretRight />
+                      {`show ${attestationsStrangers.length}`}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 items-center mr-1">
+                      <AiFillCaretUp />
+                      hide
+                    </div>
+                  )}
+                  other attestations
+                </div>
+              </button>
+            )}
+            {(isAttestationInfosOpen && attestationsStrangers.length) ||
+            !isConnected ? (
+              attestationsStrangers.map((attestation) => (
                 <AttestationListItem
-                  key={idx}
+                  key={attestation.id}
+                  id={attestation.id}
                   userType={attestation.userType}
                   attestation={attestation.attestation}
-                  onClickIcon={() => {}}
+                  onClickIcon={() =>
+                    router.push(`/user/${attestation.attestation.attester}`)
+                  }
+                  isAttesting={false}
                   onAttest={() => {}}
                   onRevoke={() => {}}
                 />
               ))
             ) : (
-              <MenuEmpty />
+              <></>
             )}
-            <button
-              className="bg-neutral-100 text-gray-400 w-full"
-              disabled={!demoAttestationStrangers.length}
-              onClick={() => setIsAttestationInfosOpen(!isAttestationInfosOpen)}
-            >
-              <div className="flex items-center py-1 px-2">
-                {!isAttestationInfosOpen ? (
-                  <div className="flex gap-2 items-center mr-1">
-                    <AiFillCaretRight />
-                    {`show ${demoAttestationStrangers.length}`}
-                  </div>
-                ) : (
-                  <div className="flex gap-2 items-center mr-1">
-                    <AiFillCaretUp />
-                    hide
-                  </div>
-                )}
-                other attestations
-              </div>
-            </button>
-            {isAttestationInfosOpen &&
-              demoAttestationStrangers.length &&
-              demoAttestationStrangers.map((attestation, idx) => (
-                <AttestationListItem
-                  key={idx}
-                  userType={attestation.userType}
-                  attestation={attestation.attestation}
-                  onClickIcon={() => {}}
-                  onAttest={() => {}}
-                  onRevoke={() => {}}
-                />
-              ))}
           </div>
-
           <div className="bg-white">
             <div className="bg-white flex flex-col gap-1">
               <MenuTitleWithSearch
@@ -325,7 +508,7 @@ export default function Address() {
                 arr.map((addressInfo, idx) => (
                   <ContractMenuReferenceItem
                     key={idx}
-                    chain={chain as string}
+                    chain={chain as SupportedChain}
                     source={addressInfo.source}
                     address={addressInfo.address}
                     contractPath={addressInfo.contractPath}
