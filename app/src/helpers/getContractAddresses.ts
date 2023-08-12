@@ -60,10 +60,9 @@ export const getAddresses = async (contractInfo: Contract) => {
   const ast = getAst(sourceCode);
   const addresses: AddressInfo[] = [];
   // Number literals are added twice, so we skip every second one
-  let skipNextNumber = false;
   visit(ast, {
     NumberLiteral: (node, parent) => {
-      if (isAddress(node.number) && node.loc && !skipNextNumber) {
+      if (isAddress(node.number) && node.loc) {
         addresses.push(
           {
             contractPath,
@@ -80,7 +79,6 @@ export const getAddresses = async (contractInfo: Contract) => {
           }
         )
       }
-      skipNextNumber = !skipNextNumber;
     }
   })
   const discoveredVariables: Record<string, string> = {};
