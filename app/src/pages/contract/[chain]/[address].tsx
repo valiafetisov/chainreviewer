@@ -167,7 +167,7 @@ export default function Address() {
                   title={contract.contractPath}
                 />
                 <div className="-mt-[2px]">
-                  <Highlight code={contract.sourceCode} chain={chain} />
+                  <Highlight code={contract.sourceCode} references={addressInfos[contract.contractPath]} chain={chain} />
                 </div>
               </div>
             ))}
