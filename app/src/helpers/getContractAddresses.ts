@@ -2,6 +2,12 @@ import { Contract } from '@prisma/client';
 import { parse, visit } from '@solidity-parser/parser'
 import { ASTNode, BaseASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
 import { AddressInfo } from '~/types'
+import loadContractLibraries from './loadContractLibraries';
+import getPrisma from './getPrisma';
+import {Contract as EthersContract, utils, providers} from 'ethers'
+import { FormatTypes } from 'ethers/lib/utils';
+import getAbiIfReturnsAddress from './getAbiIfReturnsAddress';
+import getProvider from './getProvider';
 
 const isAddress = (val: string) => {
   return val.length === 42 && val.startsWith('0x')
@@ -28,17 +34,35 @@ function getFlatLocationInfo(node: ASTNode | BaseASTNode) {
   }
 }
 
+const findMatchingId = (discovered: Record<string, string>, name: string, range?: [number, number]) => {
+  const stateVarsWithMatchingName = Object.keys(discovered).filter(key => key.startsWith(`${name} `));
+  if (stateVarsWithMatchingName.length === 0) {
+    return
+  }
+  const targetRangeStart = range ? range[0] : undefined;
+  if (!targetRangeStart) {
+    return
+  }
+  let relevantDeclarationRangeStart: number = 0;
+  stateVarsWithMatchingName.forEach(key => {
+    const [_varName, rangeStart] = key.split(' ');
+    if (targetRangeStart >= Number(rangeStart) && Number(rangeStart) > relevantDeclarationRangeStart) {
+      relevantDeclarationRangeStart = Number(rangeStart);
+    }
+  })
+  return `${name} ${relevantDeclarationRangeStart}`;
+}
+
 const getVariableId = (varName: string, node: ASTNode) => (`${varName} ${node.range ? node.range[0] : ''}`);
 
-export const getAddresses = (contractInfo: Contract) => {
-  const { contractName, contractPath, sourceCode, address } = contractInfo;
+export const getAddresses = async (contractInfo: Contract) => {
+  const { contractName, contractPath, sourceCode, address, chain } = contractInfo;
   const ast = getAst(sourceCode);
   const addresses: AddressInfo[] = [];
   // Number literals are added twice, so we skip every second one
-  let skipNextNumber = false;
   visit(ast, {
     NumberLiteral: (node, parent) => {
-      if (isAddress(node.number) && node.loc && !skipNextNumber) {
+      if (isAddress(node.number) && node.loc) {
         addresses.push(
           {
             contractPath,
@@ -55,7 +79,6 @@ export const getAddresses = (contractInfo: Contract) => {
           }
         )
       }
-      skipNextNumber = !skipNextNumber;
     }
   })
   const discoveredVariables: Record<string, string> = {};
@@ -191,5 +214,242 @@ export const getAddresses = (contractInfo: Contract) => {
       )
     }
   })
-  return addresses;
+  const loadedLibraries = await loadContractLibraries(address, chain);
+  const monitoredFunctions: Record<string, string[]> = {};
+  for (const [libraryName, libraryAddress] of Object.entries(loadedLibraries)) {
+    const abi = (await getPrisma().contract.findFirst({
+      where: {
+        address: libraryAddress,
+        chain,
+      }
+    }))?.abi;
+    if ( !abi ) {
+      continue;
+    }
+    const iface = new utils.Interface(abi);
+    const ifaceElements = iface.format(FormatTypes.full);
+    if (!(ifaceElements instanceof Array)) {
+      continue;
+    }
+    const relevantFunctions = ifaceElements.filter((element) => element.startsWith('function') && element.includes('returns (address)'));
+    const relevantFunctionNames = relevantFunctions.map((element) => element.split(' ')[1].split('(')[0]);
+    monitoredFunctions[libraryName] = relevantFunctionNames;
+  }
+  visit(ast, {
+    MemberAccess(node, parent) {
+      const memberAccessExpression = node.expression;
+      if (!parent || parent.type !== 'FunctionCall') {
+        return;
+      }
+      // if something like `libraryName.functionName()`
+      if (memberAccessExpression.type === 'Identifier') {
+        if (!Object.keys(loadedLibraries).includes(memberAccessExpression.name)) {
+          return;
+        }
+        if (!Object.keys(monitoredFunctions).includes(memberAccessExpression.name)) {
+          return;
+        }
+        if (!monitoredFunctions[memberAccessExpression.name].includes(node.memberName)) {
+          return
+        }
+        const calledFunction = node.memberName;
+        const libraryAddress = loadedLibraries[memberAccessExpression.name];
+        const argsToUse = parent.arguments.map((arg) => {
+          if (arg.type === 'NumberLiteral') {
+            return arg.number;
+          }
+          if (arg.type === 'StringLiteral') {
+            return arg.value;
+          }
+          if (arg.type === 'Identifier') {
+            const matchingVal = (
+             findMatchingId(discoveredStateVars, arg.name, arg.range) ||
+             findMatchingId(discoveredVariables, arg.name, arg.range) ||
+             undefined
+            );
+            if (!matchingVal) {
+              return
+            }
+            const val = discoveredStateVars[matchingVal] || discoveredVariables[matchingVal] || undefined;
+            if (!val) {
+              return null;
+            }
+            return val;
+          }
+        })
+        if (argsToUse.includes(null)) {
+          return;
+        };
+        addresses.push(
+          {
+            ...getFlatLocationInfo(node),
+            contractPath,
+            contractName,
+            address: '',
+            source: "public_function",
+            parent,
+            getAddress: async () => {
+              const abi = await getAbiIfReturnsAddress(libraryAddress, chain, calledFunction);
+              if (!abi) {
+                throw new Error(`Could not find ABI for ${libraryAddress} on ${chain}`);
+              }
+              const provider = getProvider(chain);
+              const contract = new EthersContract(libraryAddress, abi, provider);
+              const formattedArgs = (argsToUse as string[]).map((arg) => {
+                if (utils.isAddress(arg)) {
+                  return arg;
+                }
+                return utils.formatBytes32String(arg);
+              })
+              return await contract[calledFunction](...formattedArgs)
+            },
+          }
+        )
+      }
+      // if something like `interface(0x123).functionName(0x1234)`
+      if (memberAccessExpression.type !== 'FunctionCall') {
+        return;
+      }
+      const memberAccessFunctionCallExpression = memberAccessExpression.expression;
+      if (memberAccessFunctionCallExpression.type !== 'Identifier') {
+        return;
+      }
+      const memberAccessFunctionCallArguments = memberAccessExpression.arguments;
+      if (memberAccessFunctionCallArguments.length !== 1) {
+        return;
+      }
+      const memberAccessFunctionCallArgument = memberAccessFunctionCallArguments[0];
+      if (memberAccessFunctionCallArgument.type !== 'NumberLiteral' && memberAccessFunctionCallArgument.type !== 'Identifier') {
+        return;
+      }
+      if (memberAccessFunctionCallArgument.type === 'Identifier') {
+        const matchingName = (
+         findMatchingId(discoveredStateVars, memberAccessFunctionCallArgument.name, memberAccessFunctionCallArgument.range) ||
+         findMatchingId(discoveredVariables, memberAccessFunctionCallArgument.name, memberAccessFunctionCallArgument.range) ||
+         undefined
+        );
+        if (!matchingName) {
+          return
+        }
+        const addressToCall = discoveredStateVars[matchingName] || discoveredVariables[matchingName] || undefined;
+        if (!addressToCall) {
+          return
+        }
+        const functionToCall = node.memberName;
+        const argsToUse = parent.arguments.map((arg) => {
+          if (arg.type === 'NumberLiteral') {
+            return arg.number;
+          }
+          if (arg.type === 'StringLiteral') {
+            return arg.value;
+          }
+          if (arg.type === 'Identifier') {
+            const matchingVal = (
+             findMatchingId(discoveredStateVars, arg.name, arg.range) ||
+             findMatchingId(discoveredVariables, arg.name, arg.range) ||
+             undefined
+            );
+            if (!matchingVal) {
+              return
+            }
+            const val = discoveredStateVars[matchingVal] || discoveredVariables[matchingVal] || undefined;
+            if (!val) {
+              return null;
+            }
+            return val;
+          }
+        })
+        if (argsToUse.includes(null)) {
+          return;
+        };
+        addresses.push(
+          {
+            ...getFlatLocationInfo(node),
+            contractPath,
+            contractName,
+            address: '',
+            source: "public_function",
+            parent,
+            getAddress: async () => {
+              const abi = await getAbiIfReturnsAddress(addressToCall, chain, functionToCall);
+              if (!abi) {
+                throw new Error(`Could not find ABI for ${addressToCall} on ${chain}`);
+              }
+              const provider = getProvider(chain);
+              const contract = new EthersContract(addressToCall, abi, provider);
+              const formattedArgs = (argsToUse as string[]).map((arg) => {
+                if (utils.isAddress(arg)) {
+                  return arg;
+                }
+                return utils.formatBytes32String(arg);
+              })
+              return await contract[functionToCall](...formattedArgs)
+            },
+          }
+        )
+      }
+      else if (memberAccessFunctionCallArgument.type === 'NumberLiteral') {
+        const addressToCall = memberAccessFunctionCallArgument.number;
+        const functionToCall = node.memberName;
+        const argsToUse = parent.arguments.map((arg) => {
+          if (arg.type === 'NumberLiteral') {
+            return arg.number;
+          }
+          if (arg.type === 'StringLiteral') {
+            return arg.value;
+          }
+          if (arg.type === 'Identifier') {
+            const val = discoveredStateVars[arg.name] || discoveredVariables[arg.name] || undefined;
+            if (!val) {
+              return null;
+            }
+            return val;
+          }
+        })
+        if (argsToUse.includes(null) || argsToUse.includes(undefined)) {
+          return;
+        };
+        addresses.push(
+          {
+            ...getFlatLocationInfo(node),
+            contractPath,
+            contractName,
+            address: '',
+            source: "public_function",
+            parent,
+            getAddress: async () => {
+              const abi = await getAbiIfReturnsAddress(addressToCall, chain, functionToCall);
+              if (!abi) {
+                throw new Error(`Could not find ABI for ${addressToCall} on ${chain}`);
+              }
+              const provider = getProvider(chain);
+              const contract = new EthersContract(addressToCall, abi, provider);
+              const formattedArgs = (argsToUse as string[]).map((arg) => {
+                if (utils.isAddress(arg)) {
+                  return arg;
+                }
+                return utils.formatBytes32String(arg);
+              })
+              return await contract[functionToCall](...formattedArgs)
+            }
+          }
+        )
+      }
+    },
+  })
+  const resolvedAddressIdx: number[] = [];
+  await Promise.all(addresses.map(async (address, i) => {
+    if (!address.getAddress) {
+      resolvedAddressIdx.push(i);
+      return
+    }
+    try {
+      address.address = await address.getAddress();
+      resolvedAddressIdx.push(i);
+    } catch (e) {
+      console.error(e)
+      return
+    }
+  }))
+  return addresses.filter((_, i) => resolvedAddressIdx.includes(i));
 }
