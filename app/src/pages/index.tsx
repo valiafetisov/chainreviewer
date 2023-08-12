@@ -45,8 +45,8 @@ export default function Home() {
                 />
               }
             />
-            <Button className="bg-primary" type="primary" htmlType="submit">
-              View Source Code
+            <Button disabled={!address} className="bg-primary" type="primary" htmlType="submit">
+              View Contract
             </Button>
           </Space.Compact>
         </div>
