@@ -190,7 +190,6 @@ export default function Address() {
     try {
       setAttesting(true)
 
-      console.log(contractAddress, contractHash, chainId)
       const encoded = contractSchemaEncoder.encodeData([
         { name: 'chainId', type: 'uint16', value: chainId },
         {
