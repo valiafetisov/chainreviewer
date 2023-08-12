@@ -163,17 +163,18 @@ export default function Address() {
       // TODO: use the correct type
       eas.connect(signer)
 
-      await eas.revoke({
+      const tx = await eas.revoke({
         schema: CODE_AUDIT_SCHEMA,
         data: {
           uid,
         },
       })
 
-      setIsStale(true)
+      await tx.wait()
     } catch (e) {
       console.error(e)
     } finally {
+      setIsStale(true)
       setAttesting(false)
     }
   }
@@ -216,10 +217,10 @@ export default function Address() {
       })
 
       await tx.wait()
-      setIsStale(true)
     } catch (e) {
       console.log(e)
     } finally {
+      setIsStale(true)
       setAttesting(false)
     }
   }
@@ -288,6 +289,7 @@ export default function Address() {
       contractAttestations.filter((att) => att.userType === 'stranger')
     )
     setIsLoadingAttestations(false)
+    setIsStale(false)
   }
 
   useEffect(() => {
