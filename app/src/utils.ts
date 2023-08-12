@@ -18,7 +18,7 @@ export const EAS_CHAIN_CONFIGS: EASChainConfig = {
   rpcProvider: `https://optimism-goerli.infura.io/v3/`,
 }
 
-export const baseURL = `https://${EAS_CHAIN_CONFIGS!.subdomain}easscan.org`
+export const baseURL = `https://${EAS_CHAIN_CONFIGS.subdomain}easscan.org`
 export const EASContractAddress = EAS_CHAIN_CONFIGS.contractAddress
 export const EASVersion = EAS_CHAIN_CONFIGS.version
 
