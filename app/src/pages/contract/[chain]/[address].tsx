@@ -44,7 +44,7 @@ const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
     className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary"
   >
     <span title={filePath} className="reverseElipsis" dir="rtl">
-      &lrm;{filePath}
+      &lrm;{filePath && filePath.substring(filePath.lastIndexOf('\/') + 1)}
     </span>
   </Link>
 )
@@ -372,7 +372,7 @@ export default function Address() {
     )
   }
 
-  if (contracts?.[0]?.abi === 'Contract source code not verified' || !contracts?.[0]?.sourceCode) {
+  if (!isLoadingContracts && (contracts?.[0]?.abi === 'Contract source code not verified' || !contracts?.[0]?.sourceCode)) {
     return (
       <div>
         <p>
@@ -381,7 +381,6 @@ export default function Address() {
       </div>
     )
   }
-
 
   return (
     <div className="flex gap-3">
