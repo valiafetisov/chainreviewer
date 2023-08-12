@@ -96,7 +96,7 @@ export default function Address() {
 
   const contractHash = useMemo(() => {
     if (!contracts.length) return ''
-    return objecthash(contracts.map(c => c.sourceCode))
+    return objecthash(contracts[0].abi)
   }, [contracts])
 
   const isAddressValid = useMemo(
