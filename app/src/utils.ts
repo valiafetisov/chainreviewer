@@ -33,35 +33,6 @@ export const contractSchemaEncoder = new SchemaEncoder(
 )
 
 export async function getAttestationsByContractAddress(address: string) {
-  const temp = await axios.post<MyAttestationResult>(
-    `${baseURL}/graphql`,
-    {
-      query:
-        'query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  }\n}',
-
-      variables: {
-        where: {
-          schemaId: {
-            equals: CODE_AUDIT_SCHEMA,
-          },
-          recipient: {
-            equals: address,
-          },
-        },
-        orderBy: [
-          {
-            time: 'desc',
-          },
-        ],
-      },
-    },
-    {
-      headers: {
-        'content-type': 'application/json',
-      },
-    }
-  )
-
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
