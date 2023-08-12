@@ -24,11 +24,19 @@ import {
   contractSchemaEncoder,
 } from '~/utils'
 import { ethers } from 'ethers'
-import objecthash from 'object-hash'
 import { toChecksumAddress } from 'web3-utils'
 import { useAccount } from 'wagmi'
 import { fromUnixTime } from 'date-fns'
 import { useRouter } from 'next/router'
+
+const digestMessage = async function (message: string) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(message)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  return hashHex
+}
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
@@ -94,9 +102,9 @@ export default function Address() {
   const [isStale, setIsStale] = useState(false)
   const [signer, setSigner] = useState<ethers.Signer | null>(null)
 
-  const contractHash = useMemo(() => {
+  const contractHashPromise = useMemo(async () => {
     if (!contracts.length) return ''
-    return objecthash(contracts[0].abi)
+    return await digestMessage(contracts.map(c => c.sourceCode).join())
   }, [contracts])
 
   const isAddressValid = useMemo(
@@ -422,11 +430,11 @@ export default function Address() {
                     onClickIcon={() =>
                       router.push(`/user/${attestation.attestation.attester}`)
                     }
-                    onAttest={() => {
+                    onAttest={async () => {
                       attestContract({
                         contractAddress: address as string,
                         chainId: chainConfig.chainId,
-                        contractHash: contractHash,
+                        contractHash: await contractHashPromise,
                       })
                     }}
                     onRevoke={() => {
