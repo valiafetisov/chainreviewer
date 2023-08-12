@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import Prism from 'prismjs'
 import Link from 'next/link'
 import 'prism-themes/themes/prism-one-light.css'
+import { Popover } from 'antd';
 
 type HighlightProps = {
   code: string
@@ -65,12 +66,13 @@ const Highlight = ({ code, chain, references }: HighlightProps) => {
         const left = r.locStartCol
         const widthMultiplier = 0.45
         const heightMultiplier = 1.1248
-        return <Link
-          key={index}
-          href={`/contract/${chain}/${r.address}`}
-          className='bg-red-500 absolute block mt-1 opacity-40'
-          style={{  height: '1rem', top: `${r.locStartLine * heightMultiplier}rem`, left: `${left * widthMultiplier}rem`, width: `${width * widthMultiplier}rem` }}
-        />
+        return <Popover key={index} content={`${r.address}`}>
+          <Link
+            href={`/contract/${chain}/${r.address}`}
+            className='bg-red-500 absolute block mt-1 opacity-40'
+            style={{  height: '1rem', top: `${r.locStartLine * heightMultiplier}rem`, left: `${left * widthMultiplier}rem`, width: `${width * widthMultiplier}rem` }}
+          />
+        </Popover>
       })}
       </div>
     </pre>
