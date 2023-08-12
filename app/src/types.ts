@@ -12,6 +12,7 @@ export declare interface AddressInfo {
   locEndCol: number
   rangeTo?: number
   rangeFrom?: number
+  getAddress?: (...args: any) => Promise<any>;
   source:
     | 'variable'
     | 'hardcoded'
