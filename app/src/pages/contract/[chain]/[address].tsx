@@ -338,7 +338,7 @@ export default function Address() {
                   chain={chain as string}
                   source={addressInfo.source}
                   address={addressInfo.address}
-                  contractPath={addressInfo.contractPath}
+                  // contractPath={addressInfo.contractPath}
                 />
               ))}
             </div>

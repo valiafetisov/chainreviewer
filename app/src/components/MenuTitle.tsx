@@ -15,7 +15,7 @@ export const MenuTitle = ({
   total,
   isLoading,
 }: MenuTitleProps) => (
-  <p className={`w-full bg-neutral-200 py-1 px-2 ${className} reverseElipsis`}>
+  <p className={`w-full sticky top-0 bg-neutral-200 py-1 px-2 ${className} reverseElipsis`}>
     <span title={title} className="font-bold">
       {title}
     </span>
@@ -47,7 +47,7 @@ export const MenuTitleWithSearch = ({
 
   return !isSearchShown ? (
     <div
-      className={`w-full bg-neutral-200 py-1 px-2 flex justify-between items-center transition duration-300 ${className}`}
+      className={`w-full sticky top-0 bg-neutral-200 py-1 px-2 flex justify-between items-center transition duration-300 ${className}`}
     >
       <div className="flex items-center">
         <span title={title} className="font-bold reverseElipsis">
