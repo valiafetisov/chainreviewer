@@ -5,6 +5,7 @@ import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { firstLetterUppercase } from '~/helpers'
 import { Select } from 'antd'
 import { chainConfigs } from '~/helpers'
+import type { SupportedChain } from '~/types'
 
 import Header from '~/components/Header'
 import Link from 'next/link'
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 
 type HeaderDescriptionProps = {
   pathname: string
-  chain?: string
+  chain?: SupportedChain
   address?: string
 }
 const HeaderDescription = ({
@@ -59,22 +60,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const [mounted, setMounted] = useState(false)
-  const [headerText, setHeaderText] = useState('')
   const { pathname, chain, address } = useDynamicRouteParams()
 
   useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    if (pathname.includes('contract') && chain && address) {
-      setHeaderText(`${firstLetterUppercase(chain as string)} / ${address}`)
-      return
-    }
-    if (pathname.includes('user') && address) {
-      setHeaderText(`${address}`)
-      return
-    }
-
-    setHeaderText('Know your contracts')
-  }, [chain, address])
 
   if (!mounted) {
     return null
