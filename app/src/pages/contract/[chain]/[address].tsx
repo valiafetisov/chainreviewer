@@ -9,6 +9,73 @@ import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
 import type { AddressInfo } from '~/types'
+import AttestationListItem, {
+  AttestationMenuItemProps,
+} from '~/components/Attestation/ListItem'
+import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
+
+// TODO: remove this mock data when there is proper data fetched @DaeunYoon
+// menu props doesn't need to be in type
+// the data type is subject of change
+const demoAttestationKnownUsers: AttestationMenuItemProps[] = [
+  {
+    userType: 'me',
+    attestation: {
+      attestationType: undefined,
+      attester: '0xdC233b5368d39FED2EB99EE4dc225882D35ff4B6',
+      attestedAt: undefined,
+    },
+    onClickIcon: () => {},
+    onAttest: () => {},
+    onRevoke: () => {},
+  },
+  {
+    userType: 'following',
+    attestation: {
+      attestationType: 'attested',
+      attester: '0xdD123b5368d39FED2EB99EE4dc225882D35ff4D4',
+      attestedAt: new Date(),
+    },
+    onClickIcon: () => {},
+    onAttest: () => {},
+    onRevoke: () => {},
+  },
+]
+const demoAttestationStrangers: AttestationMenuItemProps[] = [
+  {
+    userType: 'stranger',
+    attestation: {
+      attestationType: 'attested',
+      attester: '0xdB513b5368d39FED2EB99EE4dc225882D35ff4VE',
+      attestedAt: new Date(),
+    },
+    onClickIcon: () => {},
+    onAttest: () => {},
+    onRevoke: () => {},
+  },
+  {
+    userType: 'stranger',
+    attestation: {
+      attestationType: 'attested',
+      attester: '0xdB513b5368d39FED2EB99EE4dc225882D35ff4VE',
+      attestedAt: new Date(),
+    },
+    onClickIcon: () => {},
+    onAttest: () => {},
+    onRevoke: () => {},
+  },
+  {
+    userType: 'stranger',
+    attestation: {
+      attestationType: 'attested',
+      attester: '0xdB513b5368d39FED2EB99EE4dc225882D35ff4VE',
+      attestedAt: new Date(),
+    },
+    onClickIcon: () => {},
+    onAttest: () => {},
+    onRevoke: () => {},
+  },
+]
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
@@ -45,18 +112,6 @@ const ContractMenuReferenceItem = ({
   </Link>
 )
 
-// TODO: mock attestation UI will be implemented from next frontend PR @DaeunYoon
-// isMine
-// isMyFollowers
-// address
-// attestation {address, attestedAt, isRevoked}
-// clickIcon
-// onClickIcon
-// onAttest
-// onRevoke
-const AttestationMenuItem = ({}: {}) => {}
-const demoAttestations = []
-
 export default function Address() {
   const { chain, address } = useDynamicRouteParams()
   const chainConfig = chainConfigs[chain as string]
@@ -72,6 +127,7 @@ export default function Address() {
   >({})
   const [isLoadingAddressInfos, setIsLoadingAddressInfos] = useState(false)
   const [addressInfosSearch, setAddressInfosSearch] = useState('')
+  const [isAttestationInfosOpen, setIsAttestationInfosOpen] = useState(false)
 
   const searchedContracts = useMemo(
     () =>
@@ -166,8 +222,8 @@ export default function Address() {
                   className="sticky top-0 z-10"
                   title={contract.contractPath}
                 />
-                <div className="-mt-[2px] bg-neutral-900">
-                  <Highlight code={contract.sourceCode} />
+                <div className="-mt-[2px]">
+                  <Highlight code={contract.sourceCode} references={addressInfos[contract.contractPath]} chain={chain} />
                 </div>
               </div>
             ))}
@@ -196,12 +252,61 @@ export default function Address() {
             )}
           </div>
 
-          <div>
+          <div className="bg-white flex flex-col gap-1">
             <MenuTitle
               title="Attestations"
-              total={5}
+              total={
+                demoAttestationKnownUsers.length +
+                demoAttestationStrangers.length
+              }
               isLoading={isLoadingContracts}
             />
+            {demoAttestationKnownUsers.length ? (
+              demoAttestationKnownUsers.map((attestation, idx) => (
+                <AttestationListItem
+                  key={idx}
+                  userType={attestation.userType}
+                  attestation={attestation.attestation}
+                  onClickIcon={() => {}}
+                  onAttest={() => {}}
+                  onRevoke={() => {}}
+                />
+              ))
+            ) : (
+              <MenuEmpty />
+            )}
+            <button
+              className="bg-neutral-100 text-gray-400 w-full"
+              disabled={!demoAttestationStrangers.length}
+              onClick={() => setIsAttestationInfosOpen(!isAttestationInfosOpen)}
+            >
+              <div className="flex items-center py-1 px-2">
+                {!isAttestationInfosOpen ? (
+                  <div className="flex gap-2 items-center mr-1">
+                    <AiFillCaretRight />
+                    {`show ${demoAttestationStrangers.length}`}
+                  </div>
+                ) : (
+                  <div className="flex gap-2 items-center mr-1">
+                    <AiFillCaretUp />
+                    hide
+                  </div>
+                )}
+                other attestations
+              </div>
+            </button>
+            {isAttestationInfosOpen &&
+              demoAttestationStrangers.length &&
+              demoAttestationStrangers.map((attestation, idx) => (
+                <AttestationListItem
+                  key={idx}
+                  userType={attestation.userType}
+                  attestation={attestation.attestation}
+                  onClickIcon={() => {}}
+                  onAttest={() => {}}
+                  onRevoke={() => {}}
+                />
+              ))}
           </div>
 
           <div className="bg-white">

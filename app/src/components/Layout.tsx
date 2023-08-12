@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react'
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { firstLetterUppercase } from '~/helpers'
 import { Select } from 'antd'
-import { chainConfigs } from '~/helpers'
+import { chainConfigs, getChainLabel } from '~/helpers'
 import type { SupportedChain } from '~/types'
-
 import Header from '~/components/Header'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -31,15 +30,17 @@ const HeaderDescription = ({
     return (
       <>
         <Select
+          title={getChainLabel[chain]}
           value={chain}
           onChange={(newChain) =>
             router.push(`/contract/${newChain}/${address}`)
           }
           options={Object.keys(chainConfigs).map((chain) => ({
-            label: firstLetterUppercase(chain),
+            label: getChainLabel[chain as SupportedChain],
             value: chain,
           }))}
-          className="chainSelect mr-1"
+          className="mr-1"
+          popupMatchSelectWidth={false}
         >
           {firstLetterUppercase(chain as string)}{' '}
         </Select>
@@ -72,7 +73,7 @@ export default function RootLayout({
       <Header
         pageDescription={HeaderDescription({
           pathname,
-          chain: chain as string,
+          chain: chain as SupportedChain,
           address: address as string,
         })}
       />

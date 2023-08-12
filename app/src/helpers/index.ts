@@ -1,5 +1,7 @@
+import type { SupportedChain } from '~/types'
+
 export const chainConfigs: Readonly<
-  Record<string, { endpoint: string; apiKey: string | undefined }>
+  Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
 > = {
   mode: {
     endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
@@ -9,11 +11,11 @@ export const chainConfigs: Readonly<
     endpoint: 'https://api.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-  goerli: {
+  'goerli-ethereum': {
     endpoint: 'https://api-goerli.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-  sepolia: {
+  'sepolia-ethereum': {
     endpoint: 'https://api-sepolia.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
@@ -21,9 +23,22 @@ export const chainConfigs: Readonly<
     endpoint: 'https://api-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
+  'optimism-goerli': {
+    endpoint: 'https://api-goerli-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
 }
 
-export const getChainConfigs = (chain: string) => {
+export const getChainLabel: Record<SupportedChain, string> = {
+  mode: 'Mode',
+  optimism: 'Optimism',
+  'optimism-goerli': 'Optimism(Goerli)',
+  ethereum: 'Ethereum',
+  'goerli-ethereum': 'Ethereum(Goerli)',
+  'sepolia-ethereum': 'Ethereum(Sepolia)',
+}
+
+export const getChainConfigs = (chain: SupportedChain) => {
   const config = chainConfigs[chain]
   if (!config) {
     throw new Error('Invalid chain')
