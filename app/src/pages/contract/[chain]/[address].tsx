@@ -8,7 +8,12 @@ import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
-import type { AddressInfo, SupportedChain, ContractAttestation } from '~/types'
+import type {
+  AddressInfo,
+  SupportedChain,
+  ContractAttestation,
+  Attestation,
+} from '~/types'
 import AttestationListItem from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
 import { EAS } from '@ethereum-attestation-service/eas-sdk'
@@ -232,15 +237,19 @@ export default function Address() {
       toChecksumAddress(address as string)
     )
 
-    const addresses = new Set<string>()
+    const uniqueAttstations: Attestation[] = []
+    const uniqueAttestors: Set<string> = new Set()
 
-    tmpAttestations.forEach((att) => {
-      addresses.add(att.recipient)
-    })
+    for (const att of tmpAttestations) {
+      if (!uniqueAttestors.has(att.attester)) {
+        uniqueAttestors.add(att.attester)
+        uniqueAttstations.push(att)
+      }
+    }
 
     let contractAttestations: ContractAttestation[] = []
 
-    tmpAttestations.forEach((att) => {
+    uniqueAttstations.forEach((att) => {
       const isRevoked = att.revocationTime !== 0
       // const decodedData = contractSchemaEncoder.decodeData(att.data)
 
