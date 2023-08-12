@@ -1,10 +1,4 @@
-import type {
-  Attestation,
-  AttestationResult,
-  EASChainConfig,
-  MyAttestationResult,
-} from './types'
-import { ethers } from 'ethers'
+import type { EASChainConfig, MyAttestationResult } from './types'
 import axios from 'axios'
 import { SchemaEncoder } from '@ethereum-attestation-service/eas-sdk'
 
@@ -86,9 +80,7 @@ export async function getAttestationsByContractAddress(address: string) {
       },
     }
   )
-  console.log(address)
 
-  console.log(temp.data.data.attestations)
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
