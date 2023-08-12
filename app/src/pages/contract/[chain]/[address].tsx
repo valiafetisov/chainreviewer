@@ -244,7 +244,7 @@ export default function Address() {
       contractAttestations.push({
         id: att.id,
         userType: att.attester === myAddress ? 'me' : 'stranger',
-        userName: undefined,
+        userName: att.attester === myAddress ? 'YOU' : undefined,
         attestation: {
           attester: att.attester,
           attestedAt: fromUnixTime(att.time),
@@ -254,6 +254,7 @@ export default function Address() {
       })
     })
 
+    console.log('contractAttestations', contractAttestations)
     if (
       myAddress &&
       !contractAttestations.find((att) => att.userType === 'me')
@@ -261,7 +262,7 @@ export default function Address() {
       contractAttestations.push({
         id: 'not-attested',
         userType: 'me',
-        userName: undefined,
+        userName: 'YOU',
         attestation: {
           attester: myAddress,
           attestedAt: undefined,
@@ -403,6 +404,7 @@ export default function Address() {
                     key={attestation.id}
                     id={attestation.id}
                     userType={attestation.userType}
+                    userName={attestation.userName}
                     attestation={attestation.attestation}
                     onClickIcon={() => {}}
                     onAttest={() => {
