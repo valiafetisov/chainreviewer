@@ -1,4 +1,5 @@
 import type { SupportedChain } from '~/types'
+import { format } from 'date-fns'
 
 export const chainConfigs: Readonly<
   Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
@@ -53,3 +54,6 @@ export const shortendAddress = (address: string) =>
   `${address.slice(0, 4)}...${address.slice(-4)}`
 
 export const timeFormatString = 'MM/DD/YYYY h:mm:ss a'
+
+export const formatDate = (date?: Date) =>
+  date ? format(date, timeFormatString) : ''

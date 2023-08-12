@@ -84,6 +84,7 @@ export interface ContractAttestation {
     attestationType?: 'attested' | 'revoked'
     attester: string
     attestedAt?: Date
+    revokedAt?: Date
   }
 }
 

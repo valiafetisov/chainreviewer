@@ -8,12 +8,7 @@ import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
-import type {
-  AddressInfo,
-  SupportedChain,
-  ResolvedAttestation,
-  ContractAttestation,
-} from '~/types'
+import type { AddressInfo, SupportedChain, ContractAttestation } from '~/types'
 import AttestationListItem from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
 import { EAS } from '@ethereum-attestation-service/eas-sdk'
@@ -250,9 +245,8 @@ export default function Address() {
         userName: undefined,
         attestation: {
           attester: att.attester,
-          attestedAt: isRevoked
-            ? new Date(att.revocationTime)
-            : new Date(att.time),
+          attestedAt: new Date(att.time),
+          revokedAt: isRevoked ? new Date(att.revocationTime) : undefined,
           attestationType: isRevoked ? 'revoked' : 'attested',
         },
       })

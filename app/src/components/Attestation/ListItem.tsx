@@ -1,6 +1,6 @@
 import { ReactNode, useMemo } from 'react'
 import { Button } from 'antd'
-import { shortendAddress } from '~/helpers'
+import { shortendAddress, formatDate } from '~/helpers'
 import { FiArrowUpRight } from 'react-icons/fi'
 import type { ContractAttestation } from '~/types'
 
@@ -39,9 +39,9 @@ export default ({
     }
 
     if (attestation.attestationType === 'attested') {
-      return 'Attested at ' + attestation.attestedAt?.toDateString()
+      return 'Attested at ' + formatDate(attestation.attestedAt)
     } else if (attestation.attestationType === 'revoked') {
-      return 'Revoked at ' + attestation.attestedAt?.toDateString()
+      return 'Revoked at ' + formatDate(attestation.revokedAt)
     }
     return 'Not yet attested'
   }, [userType])
