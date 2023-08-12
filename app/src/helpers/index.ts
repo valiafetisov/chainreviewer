@@ -9,11 +9,11 @@ export const chainConfigs: Readonly<
     endpoint: 'https://api.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-  goerli: {
+  'goerli-ethereum': {
     endpoint: 'https://api-goerli.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-  sepolia: {
+  'sepolia-ethereum': {
     endpoint: 'https://api-sepolia.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
@@ -21,6 +21,19 @@ export const chainConfigs: Readonly<
     endpoint: 'https://api-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
+  'goerli-optimism': {
+    endpoint: 'https://api-goerli-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
+}
+
+export const getChainLabel: Record<keyof typeof chainConfigs, string> = {
+  mode: 'Mode',
+  optimism: 'Optimism',
+  'goerli-optimism': 'Optimism(Goerli)',
+  ethereum: 'Ethereum',
+  'goerli-ethereum': 'Ethereum(Goerli)',
+  'sepolia-ethereum': 'Ethereum(Sepolia)',
 }
 
 export const getChainConfigs = (chain: string) => {

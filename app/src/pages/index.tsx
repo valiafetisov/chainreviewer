@@ -2,7 +2,7 @@ import { useState, SyntheticEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { Select, Input, Button, Space } from 'antd'
-import { firstLetterUppercase } from '~/helpers'
+import { getChainLabel } from '~/helpers'
 import type { SupportedChain } from '~/types'
 import { chainConfigs } from '~/helpers'
 
@@ -34,13 +34,14 @@ export default function Home() {
               style={{ borderRadius: '0px' }}
               addonBefore={
                 <Select
+                  title={getChainLabel[chain]}
                   value={chain}
                   onChange={setChain}
                   options={Object.keys(chainConfigs).map((chain) => ({
-                    label: firstLetterUppercase(chain),
+                    label: getChainLabel[chain],
                     value: chain,
                   }))}
-                  className="chainSelect"
+                  popupMatchSelectWidth={false}
                 />
               }
             />

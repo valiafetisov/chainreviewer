@@ -23,7 +23,3 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.chainSelect .ant-select-selector {
-  @apply w-28 !important;
-}
