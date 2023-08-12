@@ -12,8 +12,9 @@ cd app \
 && npx prisma db push
 ```
 2. open `.env` file with your preffered editor and populate the missing values.
+   - see the [corresponding section](./README.md#environment-variables) for configuration of these keys
 
-3. Run the development server.
+4. Run the development server.
 ```bash
 npm run dev
 ```
