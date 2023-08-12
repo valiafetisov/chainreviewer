@@ -6,14 +6,12 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 1. Install dependencies and apply database schema
 ```bash
-cd app
-npm install
-cp .env.example .env
-npx prisma db push
+cd app \
+&& npm install \
+&& cp .env.example .env \
+&& npx prisma db push
 ```
-
 2. open `.env` file with your preffered editor and populate the missing values.
-
 
 3. Run the development server.
 ```bash
