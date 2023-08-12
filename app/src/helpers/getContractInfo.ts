@@ -25,8 +25,6 @@ export default async function getContractInfo(
     return new Error('No API key')
   }
 
-  console.log('Fetching contract info from:', endpoint)
-
   const fetchingURL =
     chain !== 'mode'
       ? `${endpoint}/api?module=contract&action=getsourcecode&address=${address}&apikey=${apiKey}`
