@@ -4,51 +4,32 @@ import { SchemaEncoder } from '@ethereum-attestation-service/eas-sdk'
 
 /** Attestation */
 export const CODE_AUDIT_SCHEMA =
-  '0x34a0149c9f5d1831012c9fa52e0375287b1cd16a6a7ecd4cbb3e210695b59f07'
+  '0x2436acbad3f99b07f76dd405e38893483047cbcf88691d4a238fc03e12a99b74'
 
-function getChainId() {
-  return Number(process.env.NEXT_PUBLIC_CHAIN_ID)
+export const EAS_CHAIN_CONFIGS: EASChainConfig = {
+  chainId: 420,
+  chainName: 'optimism-goerli',
+  subdomain: 'optimism-goerli-bedrock.',
+  version: '0.26',
+  contractAddress: '0x4200000000000000000000000000000000000021',
+  schemaRegistryAddress: '0x4200000000000000000000000000000000000020',
+  etherscanURL: 'https://goerli-optimism.etherscan.io/',
+  contractStartBlock: 2958570,
+  rpcProvider: `https://optimism-goerli.infura.io/v3/`,
 }
 
-export const CHAINID = getChainId()
-if (!CHAINID) {
-  throw Error('No chain ID env found')
-}
-
-export const EAS_CHAIN_CONFIGS: EASChainConfig[] = [
-  {
-    chainId: 420,
-    chainName: 'optimism-goerli',
-    subdomain: 'optimism-goerli-bedrock.',
-    version: '0.26',
-    contractAddress: '0x4200000000000000000000000000000000000021',
-    schemaRegistryAddress: '0x4200000000000000000000000000000000000020',
-    etherscanURL: 'https://goerli-optimism.etherscan.io/',
-    contractStartBlock: 2958570,
-    rpcProvider: `https://optimism-goerli.infura.io/v3/`,
-  },
-]
-
-export const activeChainConfig = EAS_CHAIN_CONFIGS.find(
-  (config) => config.chainId === CHAINID
-)
-
-if (!activeChainConfig) {
-  throw Error('No chain config found for chain ID')
-}
-
-export const baseURL = `https://${activeChainConfig!.subdomain}easscan.org`
-export const EASContractAddress = activeChainConfig.contractAddress
-export const EASVersion = activeChainConfig.version
+export const baseURL = `https://${EAS_CHAIN_CONFIGS!.subdomain}easscan.org`
+export const EASContractAddress = EAS_CHAIN_CONFIGS.contractAddress
+export const EASVersion = EAS_CHAIN_CONFIGS.version
 
 export const EAS_CONFIG = {
   address: EASContractAddress,
   version: EASVersion,
-  chainId: CHAINID,
+  chainId: EAS_CHAIN_CONFIGS.chainId,
 }
 
 export const contractSchemaEncoder = new SchemaEncoder(
-  'address contractAddress,string hash,string chain'
+  'uint16 chainId, address contractAddress, string contractHash'
 )
 
 export async function getAttestationsByContractAddress(address: string) {

@@ -23,6 +23,7 @@ import objecthash from 'object-hash'
 import { toChecksumAddress } from 'web3-utils'
 import { useAccount } from 'wagmi'
 import { fromUnixTime } from 'date-fns'
+import { useRouter } from 'next/router'
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
@@ -65,8 +66,9 @@ export default function Address() {
   const { chain, address } = useDynamicRouteParams()
   const chainConfig = chainConfigs[chain as SupportedChain]
   const { address: myAddress, isConnected } = useAccount()
+  const router = useRouter()
 
-  const [constracts, setContracts] = useState<Contract[]>([])
+  const [contracts, setContracts] = useState<Contract[]>([])
   const [isLoadingContracts, setIsLoadingContracs] = useState(false)
   const [contractSearch, setContractSearch] = useState('')
   const [addressInfos, setAddressInfos] = useState<
@@ -87,10 +89,10 @@ export default function Address() {
   const [isStale, setIsStale] = useState(false)
   const [signer, setSigner] = useState<ethers.Signer | null>(null)
 
-  const constractHash = useMemo(() => {
-    if (!constracts.length) return ''
-    return objecthash(constracts[0].abi)
-  }, [constracts])
+  const contractHash = useMemo(() => {
+    if (!contracts.length) return ''
+    return objecthash(contracts[0].abi)
+  }, [contracts])
 
   const isAddressValid = useMemo(
     () => (typeof address === 'string' ? isAddress(address) : false),
@@ -99,7 +101,7 @@ export default function Address() {
 
   const searchedContracts = useMemo(
     () =>
-      constracts
+      contracts
         .map((contract) => ({
           ...contract,
           lowerCasePath: contract.contractPath.toLowerCase(),
@@ -107,7 +109,7 @@ export default function Address() {
         .filter((contract) =>
           contract.lowerCasePath.includes(contractSearch.toLowerCase())
         ),
-    [constracts, contractSearch]
+    [contracts, contractSearch]
   )
 
   const searchedAddressInfos = useMemo(
@@ -165,32 +167,33 @@ export default function Address() {
 
       setIsStale(true)
     } catch (e) {
-      console.log(e)
+      console.error(e)
     } finally {
       setAttesting(false)
     }
   }
 
   const attestContract = async function ({
-    constractAddress,
-    hash,
-    chain,
+    contractAddress,
+    contractHash,
+    chainId,
   }: {
-    constractAddress: string
-    hash: string
-    chain: string
+    contractAddress: string
+    contractHash: string
+    chainId: number
   }) {
     try {
       setAttesting(true)
 
+      console.log(contractAddress, contractHash, chainId)
       const encoded = contractSchemaEncoder.encodeData([
+        { name: 'chainId', type: 'uint16', value: chainId },
         {
           name: 'contractAddress',
           type: 'address',
-          value: constractAddress,
+          value: contractAddress,
         },
-        { name: 'hash', type: 'string', value: hash },
-        { name: 'chain', type: 'string', value: chain },
+        { name: 'contractHash', type: 'string', value: contractHash },
       ])
 
       // @ts-expect-error This should work but type doesn't match.
@@ -199,7 +202,7 @@ export default function Address() {
 
       const tx = await eas.attest({
         data: {
-          recipient: constractAddress,
+          recipient: contractAddress,
           data: encoded,
           refUID: ethers.constants.HashZero,
           revocable: true,
@@ -254,7 +257,6 @@ export default function Address() {
       })
     })
 
-    console.log('contractAttestations', contractAttestations)
     if (
       myAddress &&
       !contractAttestations.find((att) => att.userType === 'me')
@@ -300,7 +302,7 @@ export default function Address() {
   }, [address, chain, isAddressValid, chainConfig])
 
   useEffect(() => {
-    if (constracts.length) {
+    if (contracts.length) {
       setIsLoadingAddressInfos(true)
       fetch(`/api/linking/${chain}/${address}`)
         .then((res) => res.json())
@@ -311,11 +313,11 @@ export default function Address() {
           setIsLoadingAddressInfos(false)
         })
     }
-  }, [constracts])
+  }, [contracts])
 
   useEffect(() => {
     getAtts()
-  }, [constracts, myAddress])
+  }, [contracts, myAddress])
 
   useEffect(() => {
     if (isStale) {
@@ -347,7 +349,7 @@ export default function Address() {
           </div>
         ) : (
           <div>
-            {constracts.map((contract) => (
+            {contracts.map((contract) => (
               <div key={contract.id} id={contract.contractPath}>
                 <MenuTitle
                   className="sticky top-0 z-10"
@@ -371,7 +373,7 @@ export default function Address() {
             <MenuTitleWithSearch
               title="Files"
               isLoading={isLoadingContracts}
-              total={constracts.length}
+              total={contracts.length}
               search={contractSearch}
               setSearch={setContractSearch}
             />
@@ -406,12 +408,15 @@ export default function Address() {
                     userType={attestation.userType}
                     userName={attestation.userName}
                     attestation={attestation.attestation}
-                    onClickIcon={() => {}}
+                    isAttesting={attesting}
+                    onClickIcon={() =>
+                      router.push(`/user/${attestation.attestation.attester}`)
+                    }
                     onAttest={() => {
                       attestContract({
-                        constractAddress: address as string,
-                        chain: chain as string,
-                        hash: constractHash,
+                        contractAddress: address as string,
+                        chainId: chainConfig.chainId,
+                        contractHash: contractHash,
                       })
                     }}
                     onRevoke={() => {
@@ -457,7 +462,10 @@ export default function Address() {
                   id={attestation.id}
                   userType={attestation.userType}
                   attestation={attestation.attestation}
-                  onClickIcon={() => {}}
+                  onClickIcon={() =>
+                    router.push(`/user/${attestation.attestation.attester}`)
+                  }
+                  isAttesting={false}
                   onAttest={() => {}}
                   onRevoke={() => {}}
                 />

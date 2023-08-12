@@ -6,6 +6,7 @@ import type { ContractAttestation } from '~/types'
 
 export interface AttestationMenuItemProps extends ContractAttestation {
   clickIcon?: ReactNode
+  isAttesting: boolean
   onClickIcon: () => void
   onAttest: () => void
   onRevoke: () => void
@@ -16,6 +17,7 @@ export default ({
   userName,
   attestation,
   clickIcon,
+  isAttesting,
   onClickIcon,
   onAttest,
   onRevoke,
@@ -72,8 +74,9 @@ export default ({
               type="link"
               className="text-primary"
               onClick={onRevoke}
+              disabled={isAttesting}
             >
-              Revoke
+              {isAttesting ? 'Revoking...' : 'Revoke'}
             </Button>
           ) : (
             <Button
@@ -81,8 +84,9 @@ export default ({
               type="link"
               className="text-primary"
               onClick={onAttest}
+              disabled={isAttesting}
             >
-              Attest
+              {isAttesting ? 'Attestting...' : 'Attest'}
             </Button>
           )
         ) : (

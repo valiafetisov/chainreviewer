@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { firstLetterUppercase } from '~/helpers'
 import { Select } from 'antd'
-import { chainConfigs, getChainLabel } from '~/helpers'
+import { chainConfigs } from '~/helpers'
 import type { SupportedChain } from '~/types'
 import Header from '~/components/Header'
 import Link from 'next/link'
@@ -30,13 +30,13 @@ const HeaderDescription = ({
     return (
       <>
         <Select
-          title={getChainLabel[chain]}
+          title={chainConfigs[chain].name}
           value={chain}
           onChange={(newChain) =>
             router.push(`/contract/${newChain}/${address}`)
           }
-          options={Object.keys(chainConfigs).map((chain) => ({
-            label: getChainLabel[chain as SupportedChain],
+          options={Object.entries(chainConfigs).map(([chain, chainConfig]) => ({
+            label: chainConfig.name,
             value: chain,
           }))}
           className="mr-1"
