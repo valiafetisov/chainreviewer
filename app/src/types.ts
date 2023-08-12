@@ -4,6 +4,7 @@ export type SupportedChain =
   | 'optimism'
   | 'optimism-goerli'
   | 'mode'
+  | 'base'
   | 'ethereum'
   | 'goerli-ethereum'
   | 'sepolia-ethereum'

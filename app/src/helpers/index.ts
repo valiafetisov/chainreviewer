@@ -11,6 +11,10 @@ export const chainConfigs: Readonly<
     endpoint: 'https://api-goerli-optimistic.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
+  base: {
+    endpoint: 'https://api.basescan.org',
+    apiKey: process.env.ETHERSCAN_API_KEY_BASE,
+  },
   mode: {
     endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
     apiKey: undefined,
@@ -31,6 +35,7 @@ export const chainConfigs: Readonly<
 
 export const getChainLabel: Record<SupportedChain, string> = {
   mode: 'Mode',
+  base: 'Base',
   optimism: 'Optimism',
   'optimism-goerli': 'Optimism(Goerli)',
   ethereum: 'Ethereum',
