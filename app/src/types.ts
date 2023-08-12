@@ -1,7 +1,13 @@
-import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types';
-import { chainConfigs } from '~/helpers'
+import { ASTNode } from '@solidity-parser/parser/dist/src/ast-types'
 
-export type SupportedChain = keyof typeof chainConfigs
+export type SupportedChain =
+  | 'mode'
+  | 'ethereum'
+  | 'goerli-ethereum'
+  | 'sepolia-ethereum'
+  | 'optimism'
+  | 'optimism-goerli'
+
 export declare interface AddressInfo {
   contractPath: string
   contractName: string
@@ -12,7 +18,7 @@ export declare interface AddressInfo {
   locEndCol: number
   rangeTo?: number
   rangeFrom?: number
-  getAddress?: (...args: any) => Promise<any>;
+  getAddress?: (...args: any) => Promise<any>
   source:
     | 'variable'
     | 'hardcoded'
