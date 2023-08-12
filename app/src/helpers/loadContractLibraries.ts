@@ -1,6 +1,6 @@
+import { SupportedChain } from '~/types'
 import getContractInfo from './getContractInfo'
 import getPrisma from './getPrisma'
-import type { SupportedChain } from '~/types'
 
 export default async function loadContractLibraries(
   address: string,
@@ -13,7 +13,6 @@ export default async function loadContractLibraries(
       chain,
     },
   })
-
   if (!contract) throw new Error('Contract not found')
   if (contract.library === '') return {}
   const libraries = contract.library.split(';')

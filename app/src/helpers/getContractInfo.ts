@@ -45,7 +45,7 @@ export default async function getContractInfo(
         runs: Number(data.optimization_runs) ?? 0,
         constructorArguments: data.constructor_args ?? '',
         evmVersion: data.evm_version,
-        library: JSON.stringify(data.external_libraries),
+        library: data.external_libraries.map((l: { name: string; address_hash: string }) => `${l.name}:${l.address_hash.slice(2)}`).join(';') ?? '',
         licenseType: '',
         proxy: data.minimal_proxy_address_hash ?? '',
         implementation: '',
