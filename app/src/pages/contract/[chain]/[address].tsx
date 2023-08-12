@@ -8,6 +8,7 @@ import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
+import { FiArrowUpRight } from 'react-icons/fi'
 import type {
   AddressInfo,
   SupportedChain,
@@ -60,17 +61,23 @@ const ContractMenuReferenceItem = ({
   contractPath: string
   chain: SupportedChain
 }) => (
-  <Link
-    href={`/contract/${chain}/${address}`}
-    target="_blank"
-    className="w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
-  >
-    <div className="flex justify-between break-words">
-      <p>Source: {source}</p>
-      <p title={address}>{shortendAddress(address)}</p>
-    </div>
-    <p>{contractPath}</p>
-  </Link>
+  <div className='flex'>
+    <Link
+      href={`#${contractPath}`}
+      className="flex-1 block w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
+    >
+      <div className="flex justify-between break-words">
+        <p>Source: {source}</p>
+        <p title={address}>{shortendAddress(address)}</p>
+      </div>
+      {/* <p>{contractPath}</p> */}
+    </Link>
+    <Link
+      href={`/contract/${chain}/${address}`}
+      target="_blank"
+      className="flex-shrink-0 block bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
+    ><FiArrowUpRight /></Link>
+  </div>
 )
 
 const eas = new EAS(EASContractAddress)
@@ -517,7 +524,7 @@ export default function Address() {
             )}
           </div>
 
-          <div className="bg-white flex flex-col gap-1 pb-10">
+          <div className="bg-white flex flex-col gap-1 pb-32">
             <MenuTitleWithSearch
               title="References"
               isLoading={isLoadingContracts || isLoadingAddressInfos}
@@ -531,7 +538,7 @@ export default function Address() {
                 chain={chain as SupportedChain}
                 source={addressInfo.source}
                 address={addressInfo.address}
-                // contractPath={addressInfo.contractPath}
+                contractPath={addressInfo.contractPath}
               />
             ))}
           </div>
