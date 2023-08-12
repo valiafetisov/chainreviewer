@@ -2,20 +2,9 @@ import { ReactNode, useMemo } from 'react'
 import { Button } from 'antd'
 import { shortendAddress } from '~/helpers'
 import { FiArrowUpRight } from 'react-icons/fi'
+import type { ContractAttestation } from '~/types'
 
-/**
- * 1. create me & ppl who I follow list
- * 2. check if they are in atestation list
- * 3. update attestation type
- */
-export type AttestationMenuItemProps = {
-  userType: 'me' | 'following' | 'stranger'
-  userName?: string
-  attestation: {
-    attestationType?: 'attested' | 'revoked'
-    attester: string
-    attestedAt?: Date
-  }
+export interface AttestationMenuItemProps extends ContractAttestation {
   clickIcon?: ReactNode
   onClickIcon: () => void
   onAttest: () => void

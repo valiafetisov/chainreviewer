@@ -6,6 +6,7 @@ import type {
 } from './types'
 import { ethers } from 'ethers'
 import axios from 'axios'
+import { SchemaEncoder } from '@ethereum-attestation-service/eas-sdk'
 
 /** Attestation */
 export const CODE_AUDIT_SCHEMA =
@@ -52,7 +53,42 @@ export const EAS_CONFIG = {
   chainId: CHAINID,
 }
 
+export const contractSchemaEncoder = new SchemaEncoder(
+  'address contractAddress,string hash,string chain'
+)
+
 export async function getAttestationsByContractAddress(address: string) {
+  const temp = await axios.post<MyAttestationResult>(
+    `${baseURL}/graphql`,
+    {
+      query:
+        'query Attestations($where: AttestationWhereInput, $orderBy: [AttestationOrderByWithRelationInput!]) {\n  attestations(where: $where, orderBy: $orderBy) {\n    attester\n    revocationTime\n    expirationTime\n    time\n    recipient\n    id\n    data\n  }\n}',
+
+      variables: {
+        where: {
+          schemaId: {
+            equals: CODE_AUDIT_SCHEMA,
+          },
+          recipient: {
+            equals: address,
+          },
+        },
+        orderBy: [
+          {
+            time: 'desc',
+          },
+        ],
+      },
+    },
+    {
+      headers: {
+        'content-type': 'application/json',
+      },
+    }
+  )
+  console.log(address)
+
+  console.log(temp.data.data.attestations)
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
