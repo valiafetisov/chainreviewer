@@ -119,7 +119,7 @@ export default function Address() {
     () => (typeof address === 'string' ? isAddress(address) : false),
     [address]
   )
-  const [constracts, setContracts] = useState<Contract[]>([])
+  const [contracts, setContracts] = useState<Contract[]>([])
   const [isLoadingContracts, setIsLoadingContracs] = useState(false)
   const [contractSearch, setContractSearch] = useState('')
   const [addressInfos, setAddressInfos] = useState<
@@ -131,7 +131,7 @@ export default function Address() {
 
   const searchedContracts = useMemo(
     () =>
-      constracts
+      Array.isArray(contracts) && contracts
         .map((contract) => ({
           ...contract,
           lowerCasePath: contract.contractPath.toLowerCase(),
@@ -139,7 +139,7 @@ export default function Address() {
         .filter((contract) =>
           contract.lowerCasePath.includes(contractSearch.toLowerCase())
         ),
-    [constracts, contractSearch]
+    [contracts, contractSearch]
   )
 
   const searchedAddressInfos = useMemo(
@@ -179,7 +179,7 @@ export default function Address() {
   }, [address, chain, isAddressValid, chainConfig])
 
   useEffect(() => {
-    if (constracts.length) {
+    if (contracts.length) {
       setIsLoadingAddressInfos(true)
       fetch(`/api/linking/${chain}/${address}`)
         .then((res) => res.json())
@@ -190,7 +190,7 @@ export default function Address() {
           setIsLoadingAddressInfos(false)
         })
     }
-  }, [constracts])
+  }, [contracts])
 
   if (!address || !chainConfig || !isAddressValid) {
     return (
@@ -206,7 +206,7 @@ export default function Address() {
       </div>
     )
   }
-
+  console.log('contracts', contracts)
   return (
     <div className="flex gap-3">
       <div className="flex-1 max-w-[calc(100%-21rem)] h-full">
@@ -216,7 +216,7 @@ export default function Address() {
           </div>
         ) : (
           <div>
-            {constracts.map((contract) => (
+            {Array.isArray(contracts) && contracts.map((contract) => (
               <div key={contract.id} id={contract.contractPath}>
                 <MenuTitle
                   className="sticky top-0 z-10"
@@ -236,7 +236,7 @@ export default function Address() {
             <MenuTitleWithSearch
               title="Files"
               isLoading={isLoadingContracts}
-              total={constracts.length}
+              total={contracts.length}
               search={contractSearch}
               setSearch={setContractSearch}
             />

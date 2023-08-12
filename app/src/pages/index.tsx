@@ -55,16 +55,22 @@ export default function Home() {
         Or try example contracts:{' '}
         <Link
           className="text-primary underline"
-          href="/contract/ethereum/0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+          href="/contract/base/0x78a087d713Be963Bf307b18F2Ff8122EF9A63ae9"
         >
-          MakerDAOvat.sol
+          BswapToken on Base
         </Link>{' '}
         <Link
           className="text-primary underline"
           href="/contract/ethereum/0xE592427A0AEce92De3Edee1F18E0157C05861564"
         >
           UniswapV3Router.sol
-        </Link>
+        </Link>{' '}
+        <Link
+          className="text-primary underline"
+          href="/contract/ethereum/0xa1c423ee0bbC927EF5809c7ebB24c86D4284e431"
+        >
+          DssSpell.sol on Ethereum
+        </Link>{' '}
       </p>
     </div>
   )
