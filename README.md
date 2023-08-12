@@ -4,13 +4,19 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
-
+1. Install dependencies and apply database schema
 ```bash
 cd app
 npm install
 cp .env.example .env
-npm run prisma db push
+npx prisma db push
+```
+
+2. open `.env` file with your preffered editor and populate the missing values.
+
+
+3. Run the development server.
+```bash
 npm run dev
 ```
 
