@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { firstLetterUppercase } from '~/helpers'
 import { Select } from 'antd'
-import { chainConfigs, getChainLabel } from '~/helpers'
-
+import { chainConfigs } from '~/helpers'
+import type { SupportedChain } from '~/types'
 import Header from '~/components/Header'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 type HeaderDescriptionProps = {
   pathname: string
-  chain?: string
+  chain?: SupportedChain
   address?: string
 }
 const HeaderDescription = ({
@@ -30,13 +30,13 @@ const HeaderDescription = ({
     return (
       <>
         <Select
-          title={getChainLabel[chain]}
+          title={chainConfigs[chain].name}
           value={chain}
           onChange={(newChain) =>
             router.push(`/contract/${newChain}/${address}`)
           }
-          options={Object.keys(chainConfigs).map((chain) => ({
-            label: getChainLabel[chain],
+          options={Object.entries(chainConfigs).map(([chain, chainConfig]) => ({
+            label: chainConfig.name,
             value: chain,
           }))}
           className="mr-1"
@@ -61,22 +61,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const [mounted, setMounted] = useState(false)
-  const [headerText, setHeaderText] = useState('')
   const { pathname, chain, address } = useDynamicRouteParams()
 
   useEffect(() => setMounted(true), [])
-  useEffect(() => {
-    if (pathname.includes('contract') && chain && address) {
-      setHeaderText(`${firstLetterUppercase(chain as string)} / ${address}`)
-      return
-    }
-    if (pathname.includes('user') && address) {
-      setHeaderText(`${address}`)
-      return
-    }
-
-    setHeaderText('Know your contracts')
-  }, [chain, address])
 
   if (!mounted) {
     return null
@@ -86,7 +73,7 @@ export default function RootLayout({
       <Header
         pageDescription={HeaderDescription({
           pathname,
-          chain: chain as string,
+          chain: chain as SupportedChain,
           address: address as string,
         })}
       />

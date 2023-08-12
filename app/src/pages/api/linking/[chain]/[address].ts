@@ -4,6 +4,7 @@ import { AddressInfo } from '~/types'
 import { getAddresses } from '~/helpers/getContractAddresses'
 import getContractInfo from '~/helpers/getContractInfo'
 import { Contract } from '@prisma/client'
+import { SupportedChain } from '~/types'
 
 const addressSchema = z.object({
   address: z.string(),
@@ -12,7 +13,10 @@ const addressSchema = z.object({
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const { address, chain } = addressSchema.parse(req.query)
-  const contracts: Contract[] | Error = await getContractInfo(address, chain)
+  const contracts: Contract[] | Error = await getContractInfo(
+    address,
+    chain as SupportedChain
+  )
   if (contracts instanceof Error) {
     res.status(500).json({ error: contracts.message })
     return

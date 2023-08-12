@@ -21,7 +21,8 @@
     ],
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    "types": ["object-hash"]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
