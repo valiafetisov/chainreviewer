@@ -178,6 +178,20 @@ export default function Address() {
     }
   }, [address, chain, isAddressValid, chainConfig])
 
+  const parseUniqueAddresses = (contracts?: Record<string, AddressInfo[]>): AddressInfo[] => {
+    if (!contracts) {
+      return []
+    }
+    const uniqueAddressInfos: AddressInfo[] = [];
+    for (const addressInfo of Object.values(contracts).flat()) {
+      if (uniqueAddressInfos.some(u => u.address === addressInfo.address)) {
+        continue
+      }
+      uniqueAddressInfos.push(addressInfo)
+    }
+    return uniqueAddressInfos
+  }
+
   useEffect(() => {
     if (contracts.length) {
       setIsLoadingAddressInfos(true)
@@ -314,24 +328,19 @@ export default function Address() {
               <MenuTitleWithSearch
                 title="References"
                 isLoading={isLoadingContracts || isLoadingAddressInfos}
-                total={Object.values(searchedAddressInfos).reduce(
-                  (total, arr) => total + arr.length,
-                  0
-                )}
+                total={parseUniqueAddresses(searchedAddressInfos).length}
                 search={addressInfosSearch}
                 setSearch={setAddressInfosSearch}
               />
-              {Object.values(searchedAddressInfos).map((arr) =>
-                arr.map((addressInfo, idx) => (
-                  <ContractMenuReferenceItem
-                    key={idx}
-                    chain={chain as string}
-                    source={addressInfo.source}
-                    address={addressInfo.address}
-                    contractPath={addressInfo.contractPath}
-                  />
-                ))
-              )}
+              {parseUniqueAddresses(searchedAddressInfos).map((addressInfo, idx) => (
+                <ContractMenuReferenceItem
+                  key={idx}
+                  chain={chain as string}
+                  source={addressInfo.source}
+                  address={addressInfo.address}
+                  contractPath={addressInfo.contractPath}
+                />
+              ))}
             </div>
           </div>
         </div>
