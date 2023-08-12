@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { firstLetterUppercase } from '~/helpers'
 import { Select } from 'antd'
-import { chainConfigs } from '~/helpers'
+import { chainConfigs, getChainLabel } from '~/helpers'
 
 import Header from '~/components/Header'
 import Link from 'next/link'
@@ -30,15 +30,17 @@ const HeaderDescription = ({
     return (
       <>
         <Select
+          title={getChainLabel[chain]}
           value={chain}
           onChange={(newChain) =>
             router.push(`/contract/${newChain}/${address}`)
           }
           options={Object.keys(chainConfigs).map((chain) => ({
-            label: firstLetterUppercase(chain),
+            label: getChainLabel[chain],
             value: chain,
           }))}
-          className="chainSelect mr-1"
+          className="mr-1"
+          popupMatchSelectWidth={false}
         >
           {firstLetterUppercase(chain as string)}{' '}
         </Select>
