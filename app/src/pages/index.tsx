@@ -28,6 +28,7 @@ export default function Home() {
           <Space.Compact className="w-full">
             <Input
               value={address}
+              spellCheck={false}
               autoFocus
               placeholder="Contract Address 0x..."
               onChange={(val) => setAddress(val.target.value)}
