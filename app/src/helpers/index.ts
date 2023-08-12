@@ -3,6 +3,14 @@ import type { SupportedChain } from '~/types'
 export const chainConfigs: Readonly<
   Record<SupportedChain, { endpoint: string; apiKey: string | undefined }>
 > = {
+  optimism: {
+    endpoint: 'https://api-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
+  'optimism-goerli': {
+    endpoint: 'https://api-goerli-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
   mode: {
     endpoint: 'https://sepolia.explorer.mode.network/api/v2/smart-contracts',
     apiKey: undefined,
@@ -18,14 +26,6 @@ export const chainConfigs: Readonly<
   'sepolia-ethereum': {
     endpoint: 'https://api-sepolia.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
-  },
-  optimism: {
-    endpoint: 'https://api-optimistic.etherscan.io',
-    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
-  },
-  'optimism-goerli': {
-    endpoint: 'https://api-goerli-optimistic.etherscan.io',
-    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
 }
 
