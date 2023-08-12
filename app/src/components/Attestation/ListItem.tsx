@@ -8,7 +8,6 @@ import { FiArrowUpRight } from 'react-icons/fi'
  * 2. check if they are in atestation list
  * 3. update attestation type
  */
-// TODO: mock attestation UI will be implemented from next frontend PR @DaeunYoon
 export type AttestationMenuItemProps = {
   userType: 'me' | 'following' | 'stranger'
   userName?: string
