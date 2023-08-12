@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-7 flex-1">
+    <div className="flex flex-col items-center justify-center gap-7 flex-1 pb-20">
       <h1 className="text-4xl font-bold">Chain Reviewer</h1>
       <form
         onSubmit={searchContract}
@@ -29,6 +29,7 @@ export default function Home() {
           <Space.Compact className="w-full">
             <Input
               value={address}
+              autoFocus
               placeholder="Contract Address 0x..."
               onChange={(val) => setAddress(val.target.value)}
               style={{ borderRadius: '0px' }}
@@ -51,7 +52,7 @@ export default function Home() {
           </Space.Compact>
         </div>
       </form>
-      <p className="text-gray-500">
+      <p className="text-gray-500 opacity-50">
         Or try example contracts:{' '}
         <Link
           className="text-primary underline"
