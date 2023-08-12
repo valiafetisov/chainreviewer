@@ -411,27 +411,7 @@ export default function Address() {
       </div>
       <div>
         <div className="flex flex-col gap-3 w-80 sticky top-0 h-screen overflow-scroll">
-          <div className="bg-white flex flex-col gap-1">
-            <MenuTitleWithSearch
-              title="Files"
-              isLoading={isLoadingContracts}
-              total={contracts.length}
-              search={contractSearch}
-              setSearch={setContractSearch}
-            />
-            {searchedContracts.length ? (
-              searchedContracts.map((contract) => (
-                <ContractMenuFileItem
-                  key={contract.id}
-                  filePath={contract.contractPath}
-                />
-              ))
-            ) : (
-              <MenuEmpty />
-            )}
-          </div>
-
-          <div className="bg-white flex flex-col gap-1">
+        <div className="bg-white flex flex-col gap-1">
             <MenuTitle
               title="Attestations"
               total={
@@ -516,25 +496,44 @@ export default function Address() {
               <></>
             )}
           </div>
-          <div className="bg-white">
-            <div className="bg-white flex flex-col gap-1">
-              <MenuTitleWithSearch
-                title="References"
-                isLoading={isLoadingContracts || isLoadingAddressInfos}
-                total={parseUniqueAddresses(searchedAddressInfos).length}
-                search={addressInfosSearch}
-                setSearch={setAddressInfosSearch}
-              />
-              {parseUniqueAddresses(searchedAddressInfos).map((addressInfo, idx) => (
-                <ContractMenuReferenceItem
-                  key={idx}
-                  chain={chain as SupportedChain}
-                  source={addressInfo.source}
-                  address={addressInfo.address}
-                  // contractPath={addressInfo.contractPath}
+
+          <div className="bg-white flex flex-col gap-1">
+            <MenuTitleWithSearch
+              title="Files"
+              isLoading={isLoadingContracts}
+              total={contracts.length}
+              search={contractSearch}
+              setSearch={setContractSearch}
+            />
+            {searchedContracts.length ? (
+              searchedContracts.map((contract) => (
+                <ContractMenuFileItem
+                  key={contract.id}
+                  filePath={contract.contractPath}
                 />
-              ))}
-            </div>
+              ))
+            ) : (
+              <MenuEmpty />
+            )}
+          </div>
+
+          <div className="bg-white flex flex-col gap-1 pb-10">
+            <MenuTitleWithSearch
+              title="References"
+              isLoading={isLoadingContracts || isLoadingAddressInfos}
+              total={parseUniqueAddresses(searchedAddressInfos).length}
+              search={addressInfosSearch}
+              setSearch={setAddressInfosSearch}
+            />
+            {parseUniqueAddresses(searchedAddressInfos).map((addressInfo, idx) => (
+              <ContractMenuReferenceItem
+                key={idx}
+                chain={chain as SupportedChain}
+                source={addressInfo.source}
+                address={addressInfo.address}
+                // contractPath={addressInfo.contractPath}
+              />
+            ))}
           </div>
         </div>
       </div>
