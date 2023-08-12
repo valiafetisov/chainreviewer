@@ -1,7 +1,8 @@
+import { SupportedChain } from "~/types";
 import getContractInfo from "./getContractInfo";
 import getPrisma from "./getPrisma";
 
-export default async function loadContractLibraries(address: string, chain: string) {
+export default async function loadContractLibraries(address: string, chain: SupportedChain) {
   await getContractInfo(address, chain);
   const contract = await getPrisma().contract.findFirst({ where: {
     address,

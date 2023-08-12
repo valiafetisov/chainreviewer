@@ -1,7 +1,7 @@
 import { Contract } from '@prisma/client';
 import { parse, visit } from '@solidity-parser/parser'
 import { ASTNode, BaseASTNode, VariableDeclaration } from '@solidity-parser/parser/dist/src/ast-types';
-import { AddressInfo } from '~/types'
+import { AddressInfo, SupportedChain } from '~/types'
 import loadContractLibraries from './loadContractLibraries';
 import getPrisma from './getPrisma';
 import {Contract as EthersContract, utils, providers} from 'ethers'
@@ -214,7 +214,7 @@ export const getAddresses = async (contractInfo: Contract) => {
       )
     }
   })
-  const loadedLibraries = await loadContractLibraries(address, chain);
+  const loadedLibraries = await loadContractLibraries(address, chain as SupportedChain);
   const monitoredFunctions: Record<string, string[]> = {};
   for (const [libraryName, libraryAddress] of Object.entries(loadedLibraries)) {
     const abi = (await getPrisma().contract.findFirst({
