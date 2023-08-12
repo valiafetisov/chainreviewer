@@ -22,6 +22,7 @@ import { ethers } from 'ethers'
 import objecthash from 'object-hash'
 import { toChecksumAddress } from 'web3-utils'
 import { useAccount } from 'wagmi'
+import { fromUnixTime } from 'date-fns'
 
 const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
   <Link
@@ -239,14 +240,15 @@ export default function Address() {
     tmpAttestations.forEach((att) => {
       const isRevoked = att.revocationTime !== 0
       // const decodedData = contractSchemaEncoder.decodeData(att.data)
+
       contractAttestations.push({
         id: att.id,
         userType: att.attester === myAddress ? 'me' : 'stranger',
         userName: undefined,
         attestation: {
           attester: att.attester,
-          attestedAt: new Date(att.time),
-          revokedAt: isRevoked ? new Date(att.revocationTime) : undefined,
+          attestedAt: fromUnixTime(att.time),
+          revokedAt: isRevoked ? fromUnixTime(att.revocationTime) : undefined,
           attestationType: isRevoked ? 'revoked' : 'attested',
         },
       })

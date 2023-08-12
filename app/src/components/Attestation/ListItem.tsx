@@ -35,7 +35,7 @@ export default ({
 
   const statusText = useMemo(() => {
     if (userType === 'me' && attestation.attestedAt) {
-      return attestation.attestedAt.toDateString()
+      return formatDate(attestation.attestedAt)
     }
 
     if (attestation.attestationType === 'attested') {
