@@ -15,3 +15,15 @@
     --background-end-rgb: 0, 0, 0;
   }
 }
+
+.reverseElipsis {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chainSelect .ant-select-selector {
+  @apply w-28 !important;
+}

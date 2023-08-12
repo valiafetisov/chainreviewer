@@ -19,7 +19,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
   const ret: Record<string, AddressInfo[]> = {}
   for (const contractInfo of contracts) {
-    const addresses = getAddresses(contractInfo)
+    const addresses = await getAddresses(contractInfo)
     addresses.forEach((addressInfo) => {
       delete addressInfo.parent
     })
