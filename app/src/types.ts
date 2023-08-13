@@ -74,7 +74,9 @@ export interface Attestation {
 }
 
 export type ResolvedAttestation = Attestation & {
-  decodedData?: Record<string, any>
+  chainId: number
+  contractAddress: string
+  contractHash: string
 }
 
 export interface ContractAttestation {
