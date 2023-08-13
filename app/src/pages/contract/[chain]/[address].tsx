@@ -1,7 +1,7 @@
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { chainConfigs } from '~/helpers'
 import { isAddress } from 'viem'
-import { shortendAddress } from '~/helpers'
+import { shortendAddress, getChainNameById } from '~/helpers'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Contract } from '@prisma/client'
@@ -13,7 +13,7 @@ import type {
   AddressInfo,
   SupportedChain,
   ContractAttestation,
-  Attestation,
+  ResolvedAttestation,
 } from '~/types'
 import AttestationListItem from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
@@ -45,7 +45,7 @@ const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
     className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary"
   >
     <span title={filePath} className="reverseElipsis" dir="rtl">
-      &lrm;{filePath && filePath.substring(filePath.lastIndexOf('\/') + 1)}
+      &lrm;{filePath && filePath.substring(filePath.lastIndexOf('/') + 1)}
     </span>
   </Link>
 )
@@ -61,7 +61,7 @@ const ContractMenuReferenceItem = ({
   contractPath: string
   chain: SupportedChain
 }) => (
-  <div className='flex'>
+  <div className="flex">
     <Link
       href={`#${contractPath}`}
       className="flex-1 block w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
@@ -76,7 +76,9 @@ const ContractMenuReferenceItem = ({
       href={`/contract/${chain}/${address}`}
       target="_blank"
       className="flex-shrink-0 block bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
-    ><FiArrowUpRight /></Link>
+    >
+      <FiArrowUpRight />
+    </Link>
   </div>
 )
 
@@ -111,7 +113,7 @@ export default function Address() {
 
   const contractHashPromise = useMemo(async () => {
     if (!contracts.length) return ''
-    return await digestMessage(contracts.map(c => c.sourceCode).join())
+    return await digestMessage(contracts.map((c) => c.sourceCode).join())
   }, [contracts])
 
   const isAddressValid = useMemo(
@@ -121,14 +123,16 @@ export default function Address() {
 
   const searchedContracts = useMemo(
     () =>
-      Array.isArray(contracts) && contracts
-        .map((contract) => ({
-          ...contract,
-          lowerCasePath: contract.contractPath.toLowerCase(),
-        }))
-        .filter((contract) =>
-          contract.lowerCasePath.includes(contractSearch.toLowerCase())
-        ),
+      Array.isArray(contracts)
+        ? contracts
+            .map((contract) => ({
+              ...contract,
+              lowerCasePath: contract.contractPath.toLowerCase(),
+            }))
+            .filter((contract) =>
+              contract.lowerCasePath.includes(contractSearch.toLowerCase())
+            )
+        : [],
     [contracts, contractSearch]
   )
 
@@ -207,7 +211,7 @@ export default function Address() {
       setAttesting(true)
 
       const encoded = contractSchemaEncoder.encodeData([
-        { name: 'chainId', type: 'uint16', value: chainId },
+        { name: 'chainId', type: 'uint24', value: chainId },
         {
           name: 'contractAddress',
           type: 'address',
@@ -249,10 +253,11 @@ export default function Address() {
     setAttestationsStrangers([])
     setIsLoadingAttestations(true)
     const tmpAttestations = await getAttestationsByContractAddress(
-      toChecksumAddress(address as string)
+      toChecksumAddress(address as string),
+      chainConfig.chainId
     )
 
-    const uniqueAttstations: Attestation[] = []
+    const uniqueAttstations: ResolvedAttestation[] = []
     const uniqueAttestors: Set<string> = new Set()
 
     for (const att of tmpAttestations) {
@@ -266,7 +271,6 @@ export default function Address() {
 
     uniqueAttstations.forEach((att) => {
       const isRevoked = att.revocationTime !== 0
-      // const decodedData = contractSchemaEncoder.decodeData(att.data)
 
       contractAttestations.push({
         id: att.id,
@@ -277,6 +281,8 @@ export default function Address() {
           attestedAt: fromUnixTime(att.time),
           revokedAt: isRevoked ? fromUnixTime(att.revocationTime) : undefined,
           attestationType: isRevoked ? 'revoked' : 'attested',
+          recipient: att.recipient,
+          chain: getChainNameById(att.chainId),
         },
       })
     })
@@ -293,6 +299,7 @@ export default function Address() {
           attester: myAddress,
           attestedAt: undefined,
           attestationType: undefined,
+          recipient: undefined,
         },
       })
     }
@@ -326,13 +333,15 @@ export default function Address() {
     }
   }, [address, chain, isAddressValid, chainConfig])
 
-  const parseUniqueAddresses = (contracts?: Record<string, AddressInfo[]>): AddressInfo[] => {
+  const parseUniqueAddresses = (
+    contracts?: Record<string, AddressInfo[]>
+  ): AddressInfo[] => {
     if (!contracts) {
       return []
     }
-    const uniqueAddressInfos: AddressInfo[] = [];
+    const uniqueAddressInfos: AddressInfo[] = []
     for (const addressInfo of Object.values(contracts).flat()) {
-      if (uniqueAddressInfos.some(u => u.address === addressInfo.address)) {
+      if (uniqueAddressInfos.some((u) => u.address === addressInfo.address)) {
         continue
       }
       uniqueAddressInfos.push(addressInfo)
@@ -379,12 +388,14 @@ export default function Address() {
     )
   }
 
-  if (!isLoadingContracts && (contracts?.[0]?.abi === 'Contract source code not verified' || !contracts?.[0]?.sourceCode)) {
+  if (
+    !isLoadingContracts &&
+    (contracts?.[0]?.abi === 'Contract source code not verified' ||
+      !contracts?.[0]?.sourceCode)
+  ) {
     return (
       <div>
-        <p>
-          Contract source code is not verified
-        </p>
+        <p>Contract source code is not verified</p>
       </div>
     )
   }
@@ -398,27 +409,28 @@ export default function Address() {
           </div>
         ) : (
           <div>
-            {Array.isArray(contracts) && contracts.map((contract) => (
-              <div key={contract.id} id={contract.contractPath}>
-                <MenuTitle
-                  className="sticky top-0 z-10"
-                  title={contract.contractPath}
-                />
-                <div className="-mt-[2px]">
-                  <Highlight
-                    code={contract.sourceCode}
-                    references={addressInfos[contract.contractPath]}
-                    chain={chain as SupportedChain}
+            {Array.isArray(contracts) &&
+              contracts.map((contract) => (
+                <div key={contract.id} id={contract.contractPath}>
+                  <MenuTitle
+                    className="sticky top-0 z-10"
+                    title={contract.contractPath}
                   />
+                  <div className="-mt-[2px]">
+                    <Highlight
+                      code={contract.sourceCode}
+                      references={addressInfos[contract.contractPath]}
+                      chain={chain as SupportedChain}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </div>
       <div>
         <div className="flex flex-col gap-3 w-80 sticky top-0 h-screen overflow-scroll">
-        <div className="bg-white flex flex-col gap-1">
+          <div className="bg-white flex flex-col gap-1">
             <MenuTitle
               title="Attestations"
               total={
@@ -532,15 +544,17 @@ export default function Address() {
               search={addressInfosSearch}
               setSearch={setAddressInfosSearch}
             />
-            {parseUniqueAddresses(searchedAddressInfos).map((addressInfo, idx) => (
-              <ContractMenuReferenceItem
-                key={idx}
-                chain={chain as SupportedChain}
-                source={addressInfo.source}
-                address={addressInfo.address}
-                contractPath={addressInfo.contractPath}
-              />
-            ))}
+            {parseUniqueAddresses(searchedAddressInfos).map(
+              (addressInfo, idx) => (
+                <ContractMenuReferenceItem
+                  key={idx}
+                  chain={chain as SupportedChain}
+                  source={addressInfo.source}
+                  address={addressInfo.address}
+                  contractPath={addressInfo.contractPath}
+                />
+              )
+            )}
           </div>
         </div>
       </div>

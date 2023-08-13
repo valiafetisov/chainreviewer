@@ -29,10 +29,13 @@ export const EAS_CONFIG = {
 }
 
 export const contractSchemaEncoder = new SchemaEncoder(
-  'uint16 chainId, address contractAddress, string contractHash'
+  'uint24 chainId,address contractAddress,string contractHash'
 )
 
-export async function getAttestationsByContractAddress(address: string) {
+export async function getAttestationsByContractAddress(
+  address: string,
+  chainId: number
+) {
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
@@ -61,10 +64,32 @@ export async function getAttestationsByContractAddress(address: string) {
       },
     }
   )
+
   return response.data.data.attestations
+    .map((attestation) => {
+      const decoded = contractSchemaEncoder
+        .decodeData(attestation.data)
+        .reduce((acc, decoded) => {
+          acc[decoded.name] = decoded.value.value
+          return acc
+        }, {} as Record<string, any>)
+
+      return {
+        ...attestation,
+        chainId: Number(decoded.chainId),
+        contractAddress: decoded.contractAddress,
+        contractHash: decoded.contractHash,
+      }
+    })
+    .filter((attestation) => {
+      return attestation.chainId === chainId
+    })
 }
 
-export async function getAttestationsByUserAddress(address: string) {
+export async function getAttestationsByUserAddress(
+  address: string,
+  chainId?: number
+) {
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
@@ -93,5 +118,25 @@ export async function getAttestationsByUserAddress(address: string) {
       },
     }
   )
+
   return response.data.data.attestations
+    .map((attestation) => {
+      const decoded = contractSchemaEncoder
+        .decodeData(attestation.data)
+        .reduce((acc, decoded) => {
+          acc[decoded.name] = decoded.value.value
+          return acc
+        }, {} as Record<string, any>)
+
+      return {
+        ...attestation,
+        chainId: Number(decoded.chainId),
+        contractAddress: decoded.contractAddress,
+        contractHash: decoded.contractHash,
+      }
+    })
+    .filter((attestation) => {
+      if (!chainId) return true
+      return attestation.chainId === chainId
+    })
 }
