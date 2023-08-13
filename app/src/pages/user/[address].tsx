@@ -340,13 +340,13 @@ export default function Profile() {
           isLoading={isLoadingFollowers}
         />
         {followers.length ? (
-          followers.map((followers) => (
-            <div className="w-full bg-gray-100 p-2">
+          followers.map((follower) => (
+            <div className="w-full bg-gray-100 p-2" key={follower.id}>
               <Link
                 className="hover:underline text-primary"
-                href={`/user/${followers.attester}`}
+                href={`/user/${follower.attester}`}
               >
-                {followers.attester}
+                {follower.attester}
               </Link>
             </div>
           ))
@@ -363,7 +363,7 @@ export default function Profile() {
           />
           {followees.length ? (
             followees.map((followee) => (
-              <div className="w-full bg-gray-100 p-2">
+              <div className="w-full bg-gray-100 p-2" key={followee.id}>
                 <Link
                   className="hover:underline text-primary"
                   href={`/user/${followee.recipient}`}

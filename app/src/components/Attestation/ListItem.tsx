@@ -14,7 +14,7 @@ export interface AttestationMenuItemProps extends ContractAttestation {
   onRevoke: () => void
 }
 
-export default ({
+const ListItem = ({
   userType,
   userName,
   attestation,
@@ -114,3 +114,5 @@ export default ({
     </div>
   )
 }
+
+export default ListItem
