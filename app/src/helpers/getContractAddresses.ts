@@ -8,7 +8,7 @@ import {
 import { AddressInfo, SupportedChain } from '~/types'
 import loadContractLibraries from './loadContractLibraries'
 import getPrisma from './getPrisma'
-import { Contract as EthersContract, utils, providers } from 'ethers'
+import { Contract as EthersContract, utils } from 'ethers'
 import { FormatTypes } from 'ethers/lib/utils'
 import getAbiIfReturnsAddress from './getAbiIfReturnsAddress'
 import getProvider from './getProvider'
@@ -353,7 +353,7 @@ export const getAddresses = async (contractInfo: Contract) => {
                 `Could not find ABI for ${libraryAddress} on ${chain}`
               )
             }
-            const provider = getProvider(chain)
+            const provider = getProvider(chain as SupportedChain)
             const contract = new EthersContract(libraryAddress, abi, provider)
             const formattedArgs = (argsToUse as string[]).map((arg) => {
               if (utils.isAddress(arg)) {
@@ -456,7 +456,7 @@ export const getAddresses = async (contractInfo: Contract) => {
                 `Could not find ABI for ${addressToCall} on ${chain}`
               )
             }
-            const provider = getProvider(chain)
+            const provider = getProvider(chain as SupportedChain)
             const contract = new EthersContract(addressToCall, abi, provider)
             const formattedArgs = (argsToUse as string[]).map((arg) => {
               if (utils.isAddress(arg)) {
@@ -509,7 +509,7 @@ export const getAddresses = async (contractInfo: Contract) => {
                 `Could not find ABI for ${addressToCall} on ${chain}`
               )
             }
-            const provider = getProvider(chain)
+            const provider = getProvider(chain as SupportedChain)
             const contract = new EthersContract(addressToCall, abi, provider)
             const formattedArgs = (argsToUse as string[]).map((arg) => {
               if (utils.isAddress(arg)) {
