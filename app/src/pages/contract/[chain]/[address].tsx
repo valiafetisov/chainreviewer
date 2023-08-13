@@ -14,6 +14,7 @@ import type {
   SupportedChain,
   ContractAttestation,
   ResolvedAttestation,
+  Attestation,
 } from '~/types'
 import AttestationListItem from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
@@ -21,8 +22,9 @@ import { EAS } from '@ethereum-attestation-service/eas-sdk'
 import {
   CODE_AUDIT_SCHEMA,
   EASContractAddress,
-  getAttestationsByContractAddress,
+  getContractsAttestationsByContractAddress,
   contractSchemaEncoder,
+  getFolloweesByAddress,
 } from '~/utils'
 import { ethers } from 'ethers'
 import { toChecksumAddress } from 'web3-utils'
@@ -106,6 +108,8 @@ export default function Address() {
   const [attestationsStrangers, setAttestationsStrangers] = useState<
     ContractAttestation[]
   >([])
+  const [followees, setFollowees] = useState<Attestation[]>([])
+  const [isLoadingFollowees, setIsLoadingFollowees] = useState(false)
 
   const [attesting, setAttesting] = useState(false)
   const [isStale, setIsStale] = useState(false)
@@ -252,7 +256,7 @@ export default function Address() {
     setAttestationsKnownUsers([])
     setAttestationsStrangers([])
     setIsLoadingAttestations(true)
-    const tmpAttestations = await getAttestationsByContractAddress(
+    const tmpAttestations = await getContractsAttestationsByContractAddress(
       toChecksumAddress(address as string),
       chainConfig.chainId
     )
@@ -274,7 +278,12 @@ export default function Address() {
 
       contractAttestations.push({
         id: att.id,
-        userType: att.attester === myAddress ? 'me' : 'stranger',
+        userType:
+          att.attester === myAddress
+            ? 'me'
+            : followees.some((followee) => followee.recipient === att.attester)
+            ? 'following'
+            : 'stranger',
         userName: att.attester === myAddress ? 'YOU' : undefined,
         attestation: {
           attester: att.attester,
@@ -304,8 +313,29 @@ export default function Address() {
       })
     }
 
+    const extraFollowees: ContractAttestation[] = followees
+      .filter(
+        (followee) =>
+          !contractAttestations.some(
+            (att) => att.attestation.attester === followee.recipient
+          )
+      )
+      .map((followee) => ({
+        id: 'not-attested',
+        userType: 'following',
+        userName: undefined,
+        attestation: {
+          attester: followee.recipient,
+          attestedAt: undefined,
+          attestationType: undefined,
+          recipient: undefined,
+        },
+      }))
+
     setAttestationsKnownUsers(
-      contractAttestations.filter((att) => att.userType !== 'stranger')
+      contractAttestations
+        .filter((att) => att.userType !== 'stranger')
+        .concat(extraFollowees)
     )
     setAttestationsStrangers(
       contractAttestations.filter((att) => att.userType === 'stranger')
@@ -314,10 +344,27 @@ export default function Address() {
     setIsStale(false)
   }
 
+  async function getFollowees() {
+    if (!myAddress) {
+      return
+    }
+
+    setFollowees([])
+    setIsLoadingFollowees(true)
+    const tmpAttestations = await getFolloweesByAddress(
+      toChecksumAddress(myAddress)
+    )
+
+    setFollowees(tmpAttestations)
+    setIsLoadingFollowees(false)
+    setIsStale(true)
+  }
+
   useEffect(() => {
+    getFollowees()
     if (signer) return
     connectWallet()
-  }, [])
+  }, [contracts, myAddress])
 
   useEffect(() => {
     if (address && chainConfig && isAddressValid) {
@@ -362,10 +409,6 @@ export default function Address() {
         })
     }
   }, [contracts])
-
-  useEffect(() => {
-    getAtts()
-  }, [contracts, myAddress])
 
   useEffect(() => {
     if (isStale) {
