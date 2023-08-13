@@ -29,7 +29,7 @@ export const EAS_CONFIG = {
 }
 
 export const contractSchemaEncoder = new SchemaEncoder(
-  'uint16 chainId, address contractAddress, string contractHash'
+  'uint24 chainId,address contractAddress,string contractHash'
 )
 
 export async function getAttestationsByContractAddress(
@@ -64,6 +64,7 @@ export async function getAttestationsByContractAddress(
       },
     }
   )
+
   return response.data.data.attestations
     .map((attestation) => {
       const decoded = contractSchemaEncoder
@@ -75,7 +76,7 @@ export async function getAttestationsByContractAddress(
 
       return {
         ...attestation,
-        chainId: decoded.chainId,
+        chainId: Number(decoded.chainId),
         contractAddress: decoded.contractAddress,
         contractHash: decoded.contractHash,
       }
@@ -87,7 +88,7 @@ export async function getAttestationsByContractAddress(
 
 export async function getAttestationsByUserAddress(
   address: string,
-  chainId: number
+  chainId?: number
 ) {
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
@@ -117,6 +118,7 @@ export async function getAttestationsByUserAddress(
       },
     }
   )
+
   return response.data.data.attestations
     .map((attestation) => {
       const decoded = contractSchemaEncoder
@@ -128,12 +130,13 @@ export async function getAttestationsByUserAddress(
 
       return {
         ...attestation,
-        chainId: decoded.chainId,
+        chainId: Number(decoded.chainId),
         contractAddress: decoded.contractAddress,
         contractHash: decoded.contractHash,
       }
     })
     .filter((attestation) => {
+      if (!chainId) return true
       return attestation.chainId === chainId
     })
 }

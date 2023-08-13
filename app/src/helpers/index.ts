@@ -1,5 +1,6 @@
 import type { SupportedChain } from '~/types'
 import { format } from 'date-fns'
+import { isAddress } from 'viem'
 
 export const chainConfigs: Readonly<
   Record<
@@ -68,9 +69,16 @@ export const firstLetterUppercase = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1)
 
 export const shortendAddress = (address: string) =>
-  `${address.slice(0, 4)}...${address.slice(-4)}`
+  isAddress(address) ? `${address.slice(0, 4)}...${address.slice(-4)}` : address
 
 export const timeFormatString = 'MM/dd/yyyy h:mm:ss a'
 
 export const formatDate = (date?: Date) =>
   date ? format(date, timeFormatString) : ''
+
+export const getChainNameById = (chainId: number) => {
+  const chain = Object.entries(chainConfigs).find(
+    ([_, chainConfigs]) => chainConfigs.chainId === chainId
+  )
+  return chain ? chain[0] : undefined
+}

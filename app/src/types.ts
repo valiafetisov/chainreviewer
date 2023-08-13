@@ -81,13 +81,15 @@ export type ResolvedAttestation = Attestation & {
 
 export interface ContractAttestation {
   id: string
-  userType: 'me' | 'following' | 'stranger'
+  userType: 'me' | 'following' | 'stranger' | 'profile'
   userName?: string
   attestation: {
     attestationType?: 'attested' | 'revoked'
     attester: string
     attestedAt?: Date
     revokedAt?: Date
+    recipient?: string
+    chain?: string
   }
 }
 

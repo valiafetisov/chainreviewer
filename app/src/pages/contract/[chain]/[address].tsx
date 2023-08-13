@@ -1,7 +1,7 @@
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
 import { chainConfigs } from '~/helpers'
 import { isAddress } from 'viem'
-import { shortendAddress } from '~/helpers'
+import { shortendAddress, getChainNameById } from '~/helpers'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { Contract } from '@prisma/client'
@@ -13,7 +13,7 @@ import type {
   AddressInfo,
   SupportedChain,
   ContractAttestation,
-  Attestation,
+  ResolvedAttestation,
 } from '~/types'
 import AttestationListItem from '~/components/Attestation/ListItem'
 import { AiFillCaretRight, AiFillCaretUp } from 'react-icons/ai'
@@ -211,7 +211,7 @@ export default function Address() {
       setAttesting(true)
 
       const encoded = contractSchemaEncoder.encodeData([
-        { name: 'chainId', type: 'uint16', value: chainId },
+        { name: 'chainId', type: 'uint24', value: chainId },
         {
           name: 'contractAddress',
           type: 'address',
@@ -257,7 +257,7 @@ export default function Address() {
       chainConfig.chainId
     )
 
-    const uniqueAttstations: Attestation[] = []
+    const uniqueAttstations: ResolvedAttestation[] = []
     const uniqueAttestors: Set<string> = new Set()
 
     for (const att of tmpAttestations) {
@@ -281,6 +281,8 @@ export default function Address() {
           attestedAt: fromUnixTime(att.time),
           revokedAt: isRevoked ? fromUnixTime(att.revocationTime) : undefined,
           attestationType: isRevoked ? 'revoked' : 'attested',
+          recipient: att.recipient,
+          chain: getChainNameById(att.chainId),
         },
       })
     })
@@ -297,6 +299,7 @@ export default function Address() {
           attester: myAddress,
           attestedAt: undefined,
           attestationType: undefined,
+          recipient: undefined,
         },
       })
     }
