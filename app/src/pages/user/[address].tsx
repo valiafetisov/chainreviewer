@@ -7,6 +7,7 @@ import type { ContractAttestation, Attestation } from '~/types'
 import {
   getContractsAttestationsByUserAddress,
   getFollowersByAddress,
+  getFolloweesByAddress,
 } from '~/utils'
 import { toChecksumAddress } from 'web3-utils'
 import { fromUnixTime } from 'date-fns'
@@ -35,6 +36,9 @@ export default function Profile() {
   const [followers, setFollowers] = useState<Attestation[]>([])
   const [isLoadingFollowers, setIsLoadingFollowers] = useState(false)
 
+  const [followees, setFollowees] = useState<Attestation[]>([])
+  const [isLoadingFollowees, setIsLoadingFollowees] = useState(false)
+
   const [attestations, setAttestations] = useState<ContractAttestation[]>([])
   const [isLoadingAttestations, setIsLoadingAttestations] = useState(false)
 
@@ -45,6 +49,21 @@ export default function Profile() {
   const isMyProfile = useMemo(() => {
     return userAddress === address
   }, [address, userAddress])
+
+  async function getFollowees() {
+    if (!userAddress) {
+      return
+    }
+
+    setFollowees([])
+    setIsLoadingFollowees(true)
+    const tmpAttestations = await getFolloweesByAddress(
+      toChecksumAddress(userAddress)
+    )
+
+    setFollowees(tmpAttestations)
+    setIsLoadingFollowees(false)
+  }
 
   async function getFollowers() {
     setFollowers([])
@@ -103,6 +122,7 @@ export default function Profile() {
 
   useEffect(() => {
     getFollowers()
+    getFollowees()
     getAtts()
   }, [address])
 
@@ -252,11 +272,14 @@ export default function Profile() {
         <MenuTitle title="General Info">
           {!isMyProfile && userAddress ? (
             following.length ? (
-              <Button onClick={unfollowUser} className="ml-2 bg-white">
+              <Button
+                onClick={unfollowUser}
+                className="ml-2 bg-white font-bold"
+              >
                 {attesting ? 'Unfollowing...' : 'Unfollow'}
               </Button>
             ) : (
-              <Button onClick={followUser} className="ml-2 bg-white">
+              <Button onClick={followUser} className="ml-2 bg-white font-bold">
                 {attesting ? 'Following...' : 'Follow'}
               </Button>
             )
@@ -331,6 +354,29 @@ export default function Profile() {
           <MenuEmpty />
         )}
       </div>
+
+      {isMyProfile ? (
+        <div className="flex-1 flex flex-col gap-1">
+          <MenuTitle
+            title={`Followings (${followees.length}) total`}
+            isLoading={isLoadingFollowees}
+          />
+          {followees.length ? (
+            followees.map((followee) => (
+              <div className="w-full bg-gray-100 p-2">
+                <Link
+                  className="hover:underline text-primary"
+                  href={`/user/${followee.recipient}`}
+                >
+                  {followee.recipient}
+                </Link>
+              </div>
+            ))
+          ) : (
+            <MenuEmpty />
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

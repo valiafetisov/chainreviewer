@@ -144,7 +144,7 @@ export async function getContractsAttestationsByUserAddress(
     })
 }
 
-export async function getFollowingUsersByAddress(address: string) {
+export async function getFolloweesByAddress(address: string) {
   const response = await axios.post<MyAttestationResult>(
     `${baseURL}/graphql`,
     {
@@ -182,7 +182,7 @@ export async function getFollowingUsersByAddress(address: string) {
         return acc
       }, {} as Record<string, any>)
 
-    return !decoded.isFollowing
+    return decoded.isFollowing
   })
 }
 
