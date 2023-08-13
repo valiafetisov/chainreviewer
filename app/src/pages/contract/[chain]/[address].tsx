@@ -169,8 +169,10 @@ export default function Address() {
         await window.ethereum.enable()
 
         const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
 
-        setSigner(provider.getSigner())
+        setSigner(signer)
+        return signer;
       } catch (error) {
         console.error('User rejected request', error)
       }
@@ -180,11 +182,12 @@ export default function Address() {
   }
 
   const revokeContract = async function (uid: string) {
+    const localSigner = signer ? signer : await connectWallet()
     try {
       setAttesting(true)
       // @ts-expect-error This should work but type doesn't match.
       // TODO: use the correct type
-      eas.connect(signer)
+      eas.connect(localSigner)
 
       const tx = await eas.revoke({
         schema: CODE_AUDIT_SCHEMA,
@@ -211,6 +214,7 @@ export default function Address() {
     contractHash: string
     chainId: number
   }) {
+    const localSigner = signer ? signer : await connectWallet()
     try {
       setAttesting(true)
 
@@ -226,7 +230,7 @@ export default function Address() {
 
       // @ts-expect-error This should work but type doesn't match.
       // TODO: use the correct type
-      eas.connect(signer)
+      eas.connect(localSigner)
 
       const tx = await eas.attest({
         data: {
@@ -364,12 +368,6 @@ export default function Address() {
   }
 
   useEffect(() => {
-    getFollowees()
-    if (signer) return
-    connectWallet()
-  }, [contracts, myAddress])
-
-  useEffect(() => {
     if (address && chainConfig && isAddressValid) {
       setIsLoadingContracs(true)
       fetch(`/api/address/${chain}/${address}`)
@@ -414,10 +412,8 @@ export default function Address() {
   }, [contracts])
 
   useEffect(() => {
-    if (isStale) {
-      getAtts()
-    }
-  }, [isStale])
+    getAtts()
+  }, [isStale, address])
 
   if (!address || !chainConfig || !isAddressValid) {
     return (
@@ -570,7 +566,7 @@ export default function Address() {
               search={contractSearch}
               setSearch={setContractSearch}
             />
-            {searchedContracts.length ? (
+            {Array.isArray(searchedContracts) ? (
               searchedContracts.map((contract) => (
                 <ContractMenuFileItem
                   key={contract.id}

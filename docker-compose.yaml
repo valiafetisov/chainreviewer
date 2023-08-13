@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+
+  database:
+    restart: unless-stopped
+    image: postgres:15
+    expose:
+      - 5432
+    environment:
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_PORT: "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+  app:
+    restart: unless-stopped
+    expose:
+      - 3000
+    build:
+      context: ./app
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@database:5432/postgres?sslmode=disable&connect_timeout=30"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  reverse-proxy:
+    restart: unless-stopped
+    image: staticfloat/nginx-certbot
+    ports:
+      - 80:80/tcp
+      - 443:443/tcp
+    environment:
+      - CERTBOT_EMAIL=valiafetisov@gmail.com
+      - CERTBOT_DOMAIN=chainreviewer.com
+      - ENVSUBST_VARS=CERTBOT_DOMAIN
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - ./nginx.conf:/etc/nginx/user.conf.d/nginx.conf:ro
+    depends_on:
+      - app
+
+volumes:
+  letsencrypt:
