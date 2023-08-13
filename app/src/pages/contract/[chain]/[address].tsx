@@ -21,7 +21,7 @@ import { EAS } from '@ethereum-attestation-service/eas-sdk'
 import {
   CODE_AUDIT_SCHEMA,
   EASContractAddress,
-  getAttestationsByContractAddress,
+  getContractsAttestationsByContractAddress,
   contractSchemaEncoder,
 } from '~/utils'
 import { ethers } from 'ethers'
@@ -252,7 +252,7 @@ export default function Address() {
     setAttestationsKnownUsers([])
     setAttestationsStrangers([])
     setIsLoadingAttestations(true)
-    const tmpAttestations = await getAttestationsByContractAddress(
+    const tmpAttestations = await getContractsAttestationsByContractAddress(
       toChecksumAddress(address as string),
       chainConfig.chainId
     )

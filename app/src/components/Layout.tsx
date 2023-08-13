@@ -2,57 +2,14 @@ import '@rainbow-me/rainbowkit/styles.css'
 import type { Metadata } from 'next'
 import { useState, useEffect } from 'react'
 import useDynamicRouteParams from '~/hooks/useDynamicRouteParams'
-import { firstLetterUppercase } from '~/helpers'
-import { Select } from 'antd'
-import { chainConfigs } from '~/helpers'
 import type { SupportedChain } from '~/types'
 import Header from '~/components/Header'
 import Link from 'next/link'
+import HeaderDescription from '~/components/HeaderDescription'
 import { useRouter } from 'next/router'
 
 export const metadata: Metadata = {
   title: 'Chain Reviewer',
-}
-
-type HeaderDescriptionProps = {
-  pathname: string
-  chain?: SupportedChain
-  address?: string
-}
-const HeaderDescription = ({
-  pathname,
-  chain,
-  address,
-}: HeaderDescriptionProps) => {
-  const router = useRouter()
-
-  if (pathname.includes('contract') && chain && address) {
-    return (
-      <>
-        <Select
-          title={chainConfigs[chain].name}
-          value={chain}
-          onChange={(newChain) =>
-            router.push(`/contract/${newChain}/${address}`)
-          }
-          options={Object.entries(chainConfigs).map(([chain, chainConfig]) => ({
-            label: chainConfig.name,
-            value: chain,
-          }))}
-          className="mr-1"
-          popupMatchSelectWidth={false}
-        >
-          {firstLetterUppercase(chain as string)}{' '}
-        </Select>
-        / {address}
-      </>
-    )
-  }
-  if (pathname.includes('user') && address) {
-    return <>{address}</>
-  }
-
-  return <>Know Your Contracts</>
 }
 
 export default function RootLayout({
@@ -62,6 +19,7 @@ export default function RootLayout({
 }) {
   const [mounted, setMounted] = useState(false)
   const { pathname, chain, address } = useDynamicRouteParams()
+  const router = useRouter()
 
   useEffect(() => setMounted(true), [])
 
@@ -75,6 +33,7 @@ export default function RootLayout({
           pathname,
           chain: chain as SupportedChain,
           address: address as string,
+          router,
         })}
       />
       <div className="px-2 flex-1 flex flex-col">{children}</div>
