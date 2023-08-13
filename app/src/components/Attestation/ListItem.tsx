@@ -3,10 +3,12 @@ import { Button } from 'antd'
 import { shortendAddress, formatDate } from '~/helpers'
 import { FiArrowUpRight } from 'react-icons/fi'
 import type { ContractAttestation } from '~/types'
+import Link from 'next/link'
 
 export interface AttestationMenuItemProps extends ContractAttestation {
   clickIcon?: ReactNode
   isAttesting: boolean
+  isProfile?: boolean
   onClickIcon: () => void
   onAttest: () => void
   onRevoke: () => void
@@ -18,12 +20,17 @@ const ListItem = ({
   attestation,
   clickIcon,
   isAttesting,
+  isProfile,
   onClickIcon,
   onAttest,
   onRevoke,
 }: AttestationMenuItemProps) => {
   const backgroundColor = useMemo(() => {
-    if (userType === 'me' || userType === 'following') {
+    if (
+      userType === 'me' ||
+      userType === 'following' ||
+      userType === 'profile'
+    ) {
       if (attestation.attestationType === 'attested') {
         return 'bg-green-600/30'
       } else if (attestation.attestationType === 'revoked') {
@@ -48,15 +55,26 @@ const ListItem = ({
     return 'Not yet attested'
   }, [userType])
 
+  const addresss = isProfile
+    ? attestation.recipient ?? 'n/a'
+    : attestation.attester
+
   return (
     <div className={`w-full ${backgroundColor} flex flex-col px-2 py-1`}>
-      <div className="flex justify-between">
-        {userName ? (
+      <div className="flex justify-between" title={addresss}>
+        {isProfile ? (
+          <Link
+            className="text-primary hover:underline cursor-pointer"
+            href={`/contract/${attestation.chain}/${attestation.recipient}`}
+          >
+            {addresss}
+          </Link>
+        ) : userName ? (
           <span>
-            {userName} ({shortendAddress(attestation.attester)})
+            {userName} ({shortendAddress(addresss)})
           </span>
         ) : (
-          <span>{shortendAddress(attestation.attester)}</span>
+          <span>{shortendAddress(addresss)}</span>
         )}
         <Button
           type="link"
@@ -67,7 +85,7 @@ const ListItem = ({
       </div>
       <div className="flex justify-between">
         <span>{statusText}</span>
-        {userType === 'me' ? (
+        {userType === 'me' && !isProfile ? (
           attestation.attestationType === 'attested' ? (
             <Button
               size="small"

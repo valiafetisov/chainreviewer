@@ -8,6 +8,7 @@ export type SupportedChain =
   | 'ethereum'
   | 'goerli-ethereum'
   | 'sepolia-ethereum'
+  | 'zora'
 
 export declare interface AddressInfo {
   contractPath: string
@@ -74,18 +75,22 @@ export interface Attestation {
 }
 
 export type ResolvedAttestation = Attestation & {
-  decodedData?: Record<string, any>
+  chainId: number
+  contractAddress: string
+  contractHash: string
 }
 
 export interface ContractAttestation {
   id: string
-  userType: 'me' | 'following' | 'stranger'
+  userType: 'me' | 'following' | 'stranger' | 'profile'
   userName?: string
   attestation: {
     attestationType?: 'attested' | 'revoked'
     attester: string
     attestedAt?: Date
     revokedAt?: Date
+    recipient?: string
+    chain?: string
   }
 }
 
