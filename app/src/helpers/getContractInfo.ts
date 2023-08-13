@@ -1,5 +1,5 @@
 import { Contract } from '@prisma/client'
-import { getChainConfigs } from '.'
+import { getChainConfigs, chainsWithoutApiKey } from '.'
 import getPrisma from './getPrisma'
 import axios from 'axios'
 import type { SupportedChain } from '~/types'
@@ -21,20 +21,19 @@ export default async function getContractInfo(
   }
 
   const { endpoint, apiKey } = getChainConfigs(chain)
-  if (!apiKey && chain !== 'mode') {
+  if (!apiKey && !chainsWithoutApiKey.includes(chain)) {
     return new Error('No API key')
   }
 
-  const fetchingURL =
-    chain !== 'mode'
-      ? `${endpoint}/api?module=contract&action=getsourcecode&address=${address}&apikey=${apiKey}`
-      : `${endpoint}/${address}`
+  const fetchingURL = !chainsWithoutApiKey.includes(chain)
+    ? `${endpoint}/api?module=contract&action=getsourcecode&address=${address}&apikey=${apiKey}`
+    : `${endpoint}/${address}`
 
   try {
     const { data } = await axios.get(fetchingURL)
 
     const contracts = []
-    if (chain === 'mode') {
+    if (chainsWithoutApiKey.includes(chain)) {
       const contractBase = {
         address: address,
         chain: chain,
@@ -45,7 +44,13 @@ export default async function getContractInfo(
         runs: Number(data.optimization_runs) ?? 0,
         constructorArguments: data.constructor_args ?? '',
         evmVersion: data.evm_version,
-        library: data.external_libraries.map((l: { name: string; address_hash: string }) => `${l.name}:${l.address_hash.slice(2)}`).join(';') ?? '',
+        library:
+          data.external_libraries
+            .map(
+              (l: { name: string; address_hash: string }) =>
+                `${l.name}:${l.address_hash.slice(2)}`
+            )
+            .join(';') ?? '',
         licenseType: '',
         proxy: data.minimal_proxy_address_hash ?? '',
         implementation: '',

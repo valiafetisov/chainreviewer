@@ -7,6 +7,7 @@ type MenuTitleProps = {
   className?: string
   total?: number
   isLoading?: boolean
+  children?: React.ReactNode
 }
 
 export const MenuTitle = ({
@@ -14,18 +15,24 @@ export const MenuTitle = ({
   className,
   total,
   isLoading,
+  children,
 }: MenuTitleProps) => (
-  <p className={`w-full sticky top-0 bg-neutral-200 py-1 px-2 ${className} reverseElipsis`}>
-    <span title={title} className="font-bold">
-      {title}
-    </span>
-    &nbsp;
-    {isLoading ? (
-      <span>Loading...</span>
-    ) : total !== undefined ? (
-      <span>({total} total)</span>
-    ) : null}
-  </p>
+  <div
+    className={`w-full sticky top-0 bg-neutral-200 py-1 px-2 ${className} reverseElipsis`}
+  >
+    <>
+      <span title={title} className="font-bold">
+        {title}
+      </span>
+      &nbsp;
+      {isLoading ? (
+        <span>Loading...</span>
+      ) : total !== undefined ? (
+        <span>({total} total)</span>
+      ) : null}
+    </>
+    {children ? <>{children}</> : null}
+  </div>
 )
 
 export const MenuTitleWithSearch = ({
