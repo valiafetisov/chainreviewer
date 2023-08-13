@@ -1,0 +1,6 @@
+node_modules
+npm-debug*
+.next
+dist
+tests
+.output
