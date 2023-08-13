@@ -18,10 +18,10 @@ export const MenuTitle = ({
   children,
 }: MenuTitleProps) => (
   <div
-    className={`w-full sticky top-0 bg-neutral-200 py-1 px-2 ${className} reverseElipsis`}
+    className={`w-full sticky top-0 bg-neutral-200 py-1 ${className} reverseElipsis`}
   >
     <>
-      <span title={title} className="font-bold">
+      <span title={title} className="font-bold px-2">
         {title}
       </span>
       &nbsp;

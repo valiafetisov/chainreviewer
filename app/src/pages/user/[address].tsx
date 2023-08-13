@@ -267,19 +267,20 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex fle items-start justify-between gap-7 flex-1">
+    <div className="flex fle items-start justify-between gap-3 flex-1">
       <div className="flex-1 w-[300px]">
         <MenuTitle title="General Info">
           {!isMyProfile && userAddress ? (
             following.length ? (
               <Button
+                size="small"
                 onClick={unfollowUser}
-                className="ml-2 bg-white font-bold"
+                className="!py-0 bg-white font-bold"
               >
                 {attesting ? 'Unfollowing...' : 'Unfollow'}
               </Button>
             ) : (
-              <Button onClick={followUser} className="ml-2 bg-white font-bold">
+              <Button size="small" onClick={followUser} className="!py-0 bg-white font-bold">
                 {attesting ? 'Following...' : 'Follow'}
               </Button>
             )
@@ -292,7 +293,7 @@ export default function Profile() {
           size="large"
           dataSource={userData}
           renderItem={(item) => (
-            <List.Item>
+            <List.Item className='!p-2'>
               <div className="flex gap-2">
                 <div className="w-[200px] font-bold text-gray-600">
                   {item.title}
@@ -307,7 +308,7 @@ export default function Profile() {
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <MenuTitle
-          title={`Actions (${attestations.length}) total`}
+          title={`Actions (${attestations.length} total)`}
           isLoading={isLoadingAttestations}
         />
         {attestations.length ? (
@@ -336,7 +337,7 @@ export default function Profile() {
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <MenuTitle
-          title={`Followers (${followers.length}) total`}
+          title={`Followers (${followers.length} total)`}
           isLoading={isLoadingFollowers}
         />
         {followers.length ? (
@@ -359,7 +360,7 @@ export default function Profile() {
       {isMyProfile ? (
         <div className="flex-1 flex flex-col gap-1">
           <MenuTitle
-            title={`Followings (${followees.length}) total`}
+            title={`Followings (${followees.length} total)`}
             isLoading={isLoadingFollowees}
           />
           {followees.length ? (
