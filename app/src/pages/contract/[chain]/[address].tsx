@@ -336,6 +336,9 @@ export default function Address() {
       contractAttestations
         .filter((att) => att.userType !== 'stranger')
         .concat(extraFollowees)
+        .sort((a, b) =>
+          a.userType === 'me' ? -1 : b.userType === 'me' ? 1 : 0
+        )
     )
     setAttestationsStrangers(
       contractAttestations.filter((att) => att.userType === 'stranger')

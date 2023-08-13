@@ -12,7 +12,7 @@ type HeaderDescriptionProps = {
   router: ReturnType<typeof useRouter>
 }
 
-export default ({
+const HeaderDescription = ({
   pathname,
   chain,
   address,
@@ -46,3 +46,5 @@ export default ({
 
   return <>Know Your Contracts</>
 }
+
+export default HeaderDescription
