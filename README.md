@@ -1,5 +1,3 @@
-![Main page](.github/chain-review_01_main-page.jpg)
-
 ![Contract page](.github/chain-review_02_parsing.jpg)
 
 # Chain Reviewer
