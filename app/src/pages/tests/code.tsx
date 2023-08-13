@@ -250,5 +250,5 @@ contract ProxyRegistry {
 `
 
 export default function Code() {
-  return <Highlight code={code} />
+  return <Highlight code={code} chain="ethereum" references={[]} />
 }

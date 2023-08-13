@@ -1,9 +1,10 @@
 import { Interface } from "ethers/lib/utils";
 import getContractInfo from "./getContractInfo"
 import getPrisma from "./getPrisma";
+import { SupportedChain } from "~/types";
 
-export default async (address: string, chain: string, functionName: string) => {
-  await getContractInfo(address, chain);
+const getAbi = async (address: string, chain: string, functionName: string) => {
+  await getContractInfo(address, chain as SupportedChain);
   const {abi} = await getPrisma().contract.findFirst({
     where: {
       address,
@@ -32,3 +33,5 @@ export default async (address: string, chain: string, functionName: string) => {
   }
   return;
 }
+
+export default getAbi

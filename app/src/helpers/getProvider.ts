@@ -8,6 +8,7 @@ const CHAIN_IDS: Record<SupportedChain, string> = {
   optimism: 'optimism',
   mode: 'https://sepolia.mode.network/',
   'optimism-goerli': 'optimism-goerli',
+  'base': 'base',
 }
 
 export default (chain: SupportedChain) => {

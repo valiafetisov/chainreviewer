@@ -293,7 +293,7 @@ export const getAddresses = async (contractInfo: Contract) => {
               if (!abi) {
                 throw new Error(`Could not find ABI for ${libraryAddress} on ${chain}`);
               }
-              const provider = getProvider(chain);
+              const provider = getProvider(chain as SupportedChain);
               const contract = new EthersContract(libraryAddress, abi, provider);
               const formattedArgs = (argsToUse as string[]).map((arg) => {
                 if (utils.isAddress(arg)) {
@@ -375,7 +375,7 @@ export const getAddresses = async (contractInfo: Contract) => {
               if (!abi) {
                 throw new Error(`Could not find ABI for ${addressToCall} on ${chain}`);
               }
-              const provider = getProvider(chain);
+              const provider = getProvider(chain as SupportedChain);
               const contract = new EthersContract(addressToCall, abi, provider);
               const formattedArgs = (argsToUse as string[]).map((arg) => {
                 if (utils.isAddress(arg)) {
@@ -422,7 +422,7 @@ export const getAddresses = async (contractInfo: Contract) => {
               if (!abi) {
                 throw new Error(`Could not find ABI for ${addressToCall} on ${chain}`);
               }
-              const provider = getProvider(chain);
+              const provider = getProvider(chain as SupportedChain);
               const contract = new EthersContract(addressToCall, abi, provider);
               const formattedArgs = (argsToUse as string[]).map((arg) => {
                 if (utils.isAddress(arg)) {

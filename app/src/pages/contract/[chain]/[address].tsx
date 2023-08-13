@@ -512,7 +512,7 @@ export default function Address() {
               search={contractSearch}
               setSearch={setContractSearch}
             />
-            {searchedContracts.length ? (
+            {Array.isArray(searchedContracts) ? (
               searchedContracts.map((contract) => (
                 <ContractMenuFileItem
                   key={contract.id}
