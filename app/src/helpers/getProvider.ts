@@ -8,6 +8,8 @@ const CHAIN_IDS: Record<SupportedChain, string> = {
   optimism: 'optimism',
   mode: 'https://sepolia.mode.network/',
   'optimism-goerli': 'optimism-goerli',
+  base: 'https://base.blockscout.com/',
+  zora: 'https://explorer.zora.energy/',
 }
 
 export default (chain: SupportedChain) => {
