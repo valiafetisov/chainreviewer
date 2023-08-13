@@ -14,7 +14,7 @@ import { fromUnixTime } from 'date-fns'
 import { MdOpenInNew } from 'react-icons/md'
 import { List, Button } from 'antd'
 import { differenceInCalendarDays } from 'date-fns'
-import { getChainNameById, shortendAddress } from '~/helpers'
+import { formatDate, getChainNameById, shortendAddress } from '~/helpers'
 import Link from 'next/link'
 import { useAccount } from 'wagmi'
 import {
@@ -267,8 +267,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex fle items-start justify-between gap-7 flex-1 sticky top-0 h-screen overflow-scroll">
-      <div className="flex-1">
+    <div className="flex fle items-start justify-between gap-7 flex-1">
+      <div className="flex-1 w-[300px]">
         <MenuTitle title="General Info">
           {!isMyProfile && userAddress ? (
             following.length ? (
@@ -294,7 +294,7 @@ export default function Profile() {
           renderItem={(item) => (
             <List.Item>
               <div className="flex gap-2">
-                <div className="w-[240px] font-bold text-gray-600">
+                <div className="w-[200px] font-bold text-gray-600">
                   {item.title}
                 </div>
                 <div>
@@ -343,10 +343,11 @@ export default function Profile() {
           followers.map((follower) => (
             <div className="w-full bg-gray-100 p-2" key={follower.id}>
               <Link
+                title={follower.attester}
                 className="hover:underline text-primary"
                 href={`/user/${follower.attester}`}
               >
-                {follower.attester}
+                {shortendAddress(follower.attester)}
               </Link>
             </div>
           ))
@@ -365,11 +366,13 @@ export default function Profile() {
             followees.map((followee) => (
               <div className="w-full bg-gray-100 p-2" key={followee.id}>
                 <Link
+                  title={followee.recipient}
                   className="hover:underline text-primary"
                   href={`/user/${followee.recipient}`}
                 >
-                  {followee.recipient}
+                  {shortendAddress(followee.recipient)}
                 </Link>
+                <p>{formatDate(fromUnixTime(followee.time))}</p>
               </div>
             ))
           ) : (
