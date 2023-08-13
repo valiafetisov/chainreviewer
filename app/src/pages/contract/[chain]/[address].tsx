@@ -412,10 +412,8 @@ export default function Address() {
   }, [contracts])
 
   useEffect(() => {
-    if (isStale) {
-      getAtts()
-    }
-  }, [isStale])
+    getAtts()
+  }, [isStale, address])
 
   if (!address || !chainConfig || !isAddressValid) {
     return (
