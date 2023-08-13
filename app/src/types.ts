@@ -8,6 +8,7 @@ export type SupportedChain =
   | 'ethereum'
   | 'goerli-ethereum'
   | 'sepolia-ethereum'
+  | 'zora'
 
 export declare interface AddressInfo {
   contractPath: string

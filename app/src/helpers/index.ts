@@ -2,6 +2,8 @@ import type { SupportedChain } from '~/types'
 import { format } from 'date-fns'
 import { isAddress } from 'viem'
 
+export const chainsWithoutApiKey: SupportedChain[] = ['mode', 'zora']
+
 export const chainConfigs: Readonly<
   Record<
     SupportedChain,
@@ -30,6 +32,12 @@ export const chainConfigs: Readonly<
     name: 'Base',
     endpoint: 'https://api.basescan.org',
     apiKey: process.env.ETHERSCAN_API_KEY_BASE,
+  },
+  zora: {
+    chainId: 7777777,
+    name: 'Zora',
+    endpoint: 'https://explorer.zora.energy/api/v2/smart-contracts',
+    apiKey: undefined,
   },
   mode: {
     chainId: 919,
