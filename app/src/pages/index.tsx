@@ -18,8 +18,8 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center gap-7 flex-1">
-      <h1 className="text-4xl font-bold">SideScan</h1>
+    <div className="flex flex-col items-center justify-center gap-7 flex-1 pb-20">
+      <h1 className="text-4xl font-bold">Chain Reviewer</h1>
       <form
         onSubmit={searchContract}
         className="flex justify-center w-full max-w-2xl"
@@ -28,6 +28,8 @@ export default function Home() {
           <Space.Compact className="w-full">
             <Input
               value={address}
+              spellCheck={false}
+              autoFocus
               placeholder="Contract Address 0x..."
               onChange={(val) => setAddress(val.target.value)}
               style={{ borderRadius: '0px' }}
@@ -46,26 +48,32 @@ export default function Home() {
                 />
               }
             />
-            <Button className="bg-primary" type="primary" htmlType="submit">
-              View Source Code
+            <Button disabled={!address} className="bg-primary" type="primary" htmlType="submit">
+              View Contract
             </Button>
           </Space.Compact>
         </div>
       </form>
-      <p className="text-gray-500">
+      <p className="text-gray-500 opacity-50">
         Or try example contracts:{' '}
         <Link
           className="text-primary underline"
-          href="/contract/ethereum/0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b"
+          href="/contract/base/0x78a087d713Be963Bf307b18F2Ff8122EF9A63ae9"
         >
-          MakerDAOvat.sol
-        </Link>{' '}
+          BswapToken on Base
+        </Link>,{' '}
         <Link
           className="text-primary underline"
           href="/contract/ethereum/0xE592427A0AEce92De3Edee1F18E0157C05861564"
         >
-          UniswapV3Router.sol
-        </Link>
+          UniswapV3Router
+        </Link>,{' '}
+        <Link
+          className="text-primary underline"
+          href="/contract/ethereum/0xa1c423ee0bbC927EF5809c7ebB24c86D4284e431"
+        >
+          MakerDAO DssSpell on Ethereum
+        </Link>{' '}
       </p>
     </div>
   )

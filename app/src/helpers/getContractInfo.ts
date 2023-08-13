@@ -120,6 +120,6 @@ export default async function getContractInfo(
     if (error.response.status === 404) {
       return []
     }
-    return error
+    throw error
   }
 }

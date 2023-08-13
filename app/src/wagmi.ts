@@ -14,7 +14,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 )
 
 const { connectors } = getDefaultWallets({
-  appName: 'SideScan',
+  appName: 'Chain Reviewer',
   chains,
   projectId: walletConnectProjectId,
 })

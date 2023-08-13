@@ -12,6 +12,24 @@ export const chainConfigs: Readonly<
     }
   >
 > = {
+  optimism: {
+    chainId: 10,
+    name: 'Optimism',
+    endpoint: 'https://api-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
+  'optimism-goerli': {
+    chainId: 420,
+    name: 'Optimism(Goerli)',
+    endpoint: 'https://api-goerli-optimistic.etherscan.io',
+    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
+  },
+  base: {
+    chainId: 8453,
+    name: 'Base',
+    endpoint: 'https://api.basescan.org',
+    apiKey: process.env.ETHERSCAN_API_KEY_BASE,
+  },
   mode: {
     chainId: 919,
     name: 'Mode',
@@ -35,18 +53,6 @@ export const chainConfigs: Readonly<
     name: 'Ethereum(Sepolia)',
     endpoint: 'https://api-sepolia.etherscan.io',
     apiKey: process.env.ETHERSCAN_API_KEY,
-  },
-  optimism: {
-    chainId: 10,
-    name: 'Optimism',
-    endpoint: 'https://api-optimistic.etherscan.io',
-    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
-  },
-  'optimism-goerli': {
-    chainId: 420,
-    name: 'Optimism(Goerli)',
-    endpoint: 'https://api-goerli-optimistic.etherscan.io',
-    apiKey: process.env.ETHERSCAN_API_KEY_OPTIMISM,
   },
 }
 

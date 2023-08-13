@@ -10,7 +10,7 @@ type HeaderProps = {
   pageDescription?: ReactNode
 }
 
-const Header = ({ pageDescription = 'Know your contracts' }: HeaderProps) => {
+const Header = ({ pageDescription = 'Know Your Contracts' }: HeaderProps) => {
   const { isConnected, address } = useAccount()
   const router = useRouter()
 
@@ -18,7 +18,7 @@ const Header = ({ pageDescription = 'Know your contracts' }: HeaderProps) => {
     <div className="h-12 py-2 px-2 flex justify-between bg-secondary items-center w-full">
       <div className="flex items-center gap-2">
         <Link href="/" className="font-bold text-primary text-lg">
-          Sidescan
+          Chain Reviewer
         </Link>
         <div className="text-gray-500 text-base">{pageDescription}</div>
       </div>

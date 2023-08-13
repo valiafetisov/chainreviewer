@@ -8,6 +8,7 @@ import { Contract } from '@prisma/client'
 import Highlight from '~/components/Highlight'
 import { MenuTitle, MenuTitleWithSearch } from '~/components/MenuTitle'
 import MenuEmpty from '~/components/MenuEmpty'
+import { FiArrowUpRight } from 'react-icons/fi'
 import type {
   AddressInfo,
   SupportedChain,
@@ -44,7 +45,7 @@ const ContractMenuFileItem = ({ filePath }: { filePath: string }) => (
     className="w-full bg-neutral-100 pt-1 px-2 block hover:bg-secondary transition duration-300 text-primary"
   >
     <span title={filePath} className="reverseElipsis" dir="rtl">
-      &lrm;{filePath}
+      &lrm;{filePath && filePath.substring(filePath.lastIndexOf('\/') + 1)}
     </span>
   </Link>
 )
@@ -60,17 +61,23 @@ const ContractMenuReferenceItem = ({
   contractPath: string
   chain: SupportedChain
 }) => (
-  <Link
-    href={`/contract/${chain}/${address}`}
-    target="_blank"
-    className="w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
-  >
-    <div className="flex justify-between break-words">
-      <p>Source: {source}</p>
-      <p title={address}>{shortendAddress(address)}</p>
-    </div>
-    <p>{contractPath}</p>
-  </Link>
+  <div className='flex'>
+    <Link
+      href={`#${contractPath}`}
+      className="flex-1 block w-full bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
+    >
+      <div className="flex justify-between break-words">
+        <p>Source: {source}</p>
+        <p title={address}>{shortendAddress(address)}</p>
+      </div>
+      {/* <p>{contractPath}</p> */}
+    </Link>
+    <Link
+      href={`/contract/${chain}/${address}`}
+      target="_blank"
+      className="flex-shrink-0 block bg-neutral-100 py-2 px-2 hover:bg-secondary transition duration-300 text-primary"
+    ><FiArrowUpRight /></Link>
+  </div>
 )
 
 const eas = new EAS(EASContractAddress)
@@ -114,7 +121,7 @@ export default function Address() {
 
   const searchedContracts = useMemo(
     () =>
-      contracts
+      Array.isArray(contracts) && contracts
         .map((contract) => ({
           ...contract,
           lowerCasePath: contract.contractPath.toLowerCase(),
@@ -319,6 +326,20 @@ export default function Address() {
     }
   }, [address, chain, isAddressValid, chainConfig])
 
+  const parseUniqueAddresses = (contracts?: Record<string, AddressInfo[]>): AddressInfo[] => {
+    if (!contracts) {
+      return []
+    }
+    const uniqueAddressInfos: AddressInfo[] = [];
+    for (const addressInfo of Object.values(contracts).flat()) {
+      if (uniqueAddressInfos.some(u => u.address === addressInfo.address)) {
+        continue
+      }
+      uniqueAddressInfos.push(addressInfo)
+    }
+    return uniqueAddressInfos
+  }
+
   useEffect(() => {
     if (contracts.length) {
       setIsLoadingAddressInfos(true)
@@ -358,6 +379,16 @@ export default function Address() {
     )
   }
 
+  if (!isLoadingContracts && (contracts?.[0]?.abi === 'Contract source code not verified' || !contracts?.[0]?.sourceCode)) {
+    return (
+      <div>
+        <p>
+          Contract source code is not verified
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex gap-3">
       <div className="flex-1 max-w-[calc(100%-21rem)] h-full">
@@ -367,7 +398,7 @@ export default function Address() {
           </div>
         ) : (
           <div>
-            {contracts.map((contract) => (
+            {Array.isArray(contracts) && contracts.map((contract) => (
               <div key={contract.id} id={contract.contractPath}>
                 <MenuTitle
                   className="sticky top-0 z-10"
@@ -387,27 +418,7 @@ export default function Address() {
       </div>
       <div>
         <div className="flex flex-col gap-3 w-80 sticky top-0 h-screen overflow-scroll">
-          <div className="bg-white flex flex-col gap-1">
-            <MenuTitleWithSearch
-              title="Files"
-              isLoading={isLoadingContracts}
-              total={contracts.length}
-              search={contractSearch}
-              setSearch={setContractSearch}
-            />
-            {searchedContracts.length ? (
-              searchedContracts.map((contract) => (
-                <ContractMenuFileItem
-                  key={contract.id}
-                  filePath={contract.contractPath}
-                />
-              ))
-            ) : (
-              <MenuEmpty />
-            )}
-          </div>
-
-          <div className="bg-white flex flex-col gap-1">
+        <div className="bg-white flex flex-col gap-1">
             <MenuTitle
               title="Attestations"
               total={
@@ -492,30 +503,44 @@ export default function Address() {
               <></>
             )}
           </div>
-          <div className="bg-white">
-            <div className="bg-white flex flex-col gap-1">
-              <MenuTitleWithSearch
-                title="References"
-                isLoading={isLoadingContracts || isLoadingAddressInfos}
-                total={Object.values(searchedAddressInfos).reduce(
-                  (total, arr) => total + arr.length,
-                  0
-                )}
-                search={addressInfosSearch}
-                setSearch={setAddressInfosSearch}
+
+          <div className="bg-white flex flex-col gap-1">
+            <MenuTitleWithSearch
+              title="Files"
+              isLoading={isLoadingContracts}
+              total={contracts.length}
+              search={contractSearch}
+              setSearch={setContractSearch}
+            />
+            {searchedContracts.length ? (
+              searchedContracts.map((contract) => (
+                <ContractMenuFileItem
+                  key={contract.id}
+                  filePath={contract.contractPath}
+                />
+              ))
+            ) : (
+              <MenuEmpty />
+            )}
+          </div>
+
+          <div className="bg-white flex flex-col gap-1 pb-32">
+            <MenuTitleWithSearch
+              title="References"
+              isLoading={isLoadingContracts || isLoadingAddressInfos}
+              total={parseUniqueAddresses(searchedAddressInfos).length}
+              search={addressInfosSearch}
+              setSearch={setAddressInfosSearch}
+            />
+            {parseUniqueAddresses(searchedAddressInfos).map((addressInfo, idx) => (
+              <ContractMenuReferenceItem
+                key={idx}
+                chain={chain as SupportedChain}
+                source={addressInfo.source}
+                address={addressInfo.address}
+                contractPath={addressInfo.contractPath}
               />
-              {Object.values(searchedAddressInfos).map((arr) =>
-                arr.map((addressInfo, idx) => (
-                  <ContractMenuReferenceItem
-                    key={idx}
-                    chain={chain as SupportedChain}
-                    source={addressInfo.source}
-                    address={addressInfo.address}
-                    contractPath={addressInfo.contractPath}
-                  />
-                ))
-              )}
-            </div>
+            ))}
           </div>
         </div>
       </div>
